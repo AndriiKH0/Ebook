@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${ebook.title}">Читалка книги</title>
+    <link rel="stylesheet" th:href="@{/css/reader.css}">
+    <script src="/js/reader.js"></script>
+    <script src="/js/scripts.js"></script>
+    <script src="/js/notes.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            font-family: Georgia, 'Times New Roman', Serif,serif;
+        }
+
+        .reader-container {
+
+            background: #fff;
+            border-radius: 8px;
+
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            line-height: 1.8;
+            text-align: justify;
+            font-size: 16px;
+            overflow: hidden;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navigation a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .reader-container {
+            min-height: 100vh; /* Убирает скачки */
+        }
+        .navigation span {
+            cursor: pointer;
+            border-bottom: 1px dashed #333;
+        }
+    </style>
+</head>
+<body>
+<!-- Кнопка для открытия бокового меню -->
+<button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+
+
+
+
+
+<!-- Боковая шторка -->
+<div class="sidebar" id="sidebar">
+    <div>
+        <h2>Темы и настройки</h2>
+        <h3>Размер шрифта</h3>
+        <div class="font-size-control">
+            <button class="font-size-btn" onclick="changeFontSize(-1)">−</button>
+            <span class="font-size-display" id="fontSizeDisplay">16</span>
+            <button class="font-size-btn" onclick="changeFontSize(1)">+</button>
+
+        </div>
+
+        <div class="icon-bar">
+            <!-- Кнопка выбора шрифта -->
+            <button id="fontSelectIcon" class="icon-btn font-select-btn">
+                <i class="fa-solid fa-font"></i> <!-- Иконка шрифта -->
+            </button>
+
+            <!-- Контейнер для списка (отдельно) -->
+
+
+            <!-- Кнопка поиска -->
+            <button id="searchIcon" class="icon-btn search-icon-btn">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <input type="text" id="searchInput" placeholder="Поиск..." style="display: none;" />
+            <button id="clearSearch" class="icon-btn search-icon-btn" style="display: none;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+
+
+
+
+
+        <div class="theme-selector">
+            <div class="theme-option theme-original" onclick="setTheme('original')">Оригинал</div>
+            <div class="theme-option theme-night" onclick="setTheme('night')">Ночь</div>
+            <div class="theme-option theme-paper" onclick="setTheme('paper')">Бумага</div>
+            <div class="theme-option theme-accent" onclick="setTheme('accent')">Акцент</div>
+            <div class="theme-option theme-day" onclick="setTheme('day')">День</div>
+            <div class="theme-option theme-focus" onclick="setTheme('focus')">Фокус</div>
+        </div>
+
+
+        <h3>Дополнительно</h3>
+        <button>Выравнивание</button>
+        <button>Колонки</button>
+
+    </div>
+    <button id="notesIcon" class="icon-btn notes-icon-btn">
+        <i class="fa-solid fa-sticky-note"></i>
+    </button>
+
+
+    <!-- Кнопка "Назад в библиотеку" -->
+    <a href="/library" class="library-back">Назад в библиотеку</a>
+
+</div>
+
+<div id="fontDropdown" class="font-dropdown">
+    <h3>Выберите шрифт</h3>
+    <div class="font-option" data-font="Georgia" style="font-family: Georgia;">Georgia</div>
+    <div class="font-option" data-font="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</div>
+    <div class="font-option" data-font="Arial" style="font-family: Arial;">Arial</div>
+    <div class="font-option" data-font="Verdana" style="font-family: Verdana;">Verdana</div>
+    <div class="font-option" data-font="Courier New" style="font-family: 'Courier New';">Courier New</div>
+    <div class="font-option" data-font="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</div>
+</div>
+<!-- Панель заметок -->
+<div class="notes-panel" id="notesPanel">
+    <h3>Заметки</h3>
+    <ul id="notesList"></ul>
+    <button id="clearNotes">Очистить заметки</button>
+</div>
+
+<!-- Окно добавления заметки -->
+<div class="add-note-popup" id="addNotePopup">
+    <h3>Добавить заметку</h3>
+    <label for="noteTitle">Название:</label>
+    <input type="text" id="noteTitle" placeholder="Введите название...">
+    <label for="noteColor">Цвет заметки:</label>
+    <div id="colorPreview" class="color-preview"></div>
+    <input type="color" id="noteColor" class="hidden-color-picker">
+    <button id="saveNote">Сохранить</button>
+    <button id="cancelNote">Отмена</button>
+</div>
+
+
+<div class="container">
+    <!-- Контейнер для текста -->
+    <div class="reader-container" id="reader" th:utext="${pageContent}"></div>
+
+    <!-- Навигация -->
+    <div class="navigation-container">
+        <div class="navigation">
+            <a id="prevPage" th:if="${hasPrevious}" th:href="@{/book/{id}(id=${ebook.id}, page=${currentPage - 1})}">
+                Назад
+            </a>
+
+            <input type="number" id="pageInput" min="1" th:max="${totalPages}" th:value="${currentPage}"
+                   style="width: 50px; text-align: center;">
+
+            <span th:text="' из ' + ${totalPages}"></span>
+
+            <a id="nextPage" th:if="${hasNext}" th:href="@{/book/{id}(id=${ebook.id}, page=${currentPage + 1})}">
+                Вперед
+            </a>
+        </div>
+    </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+</body>
+</html>

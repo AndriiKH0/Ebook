@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Редактировать книгу</title>
+</head>
+<body>
+<h1>Редактировать книгу</h1>
+<form th:action="@{/edit/{id}(id=${ebook.id})}" method="post">
+    <label for="title">Название:</label>
+    <input type="text" id="title" name="title" th:value="${ebook.title}" required>
+    <br>
+    <label for="author">Автор:</label>
+    <input type="text" id="author" name="author" th:value="${ebook.author}" required>
+    <br>
+    <label for="genres">Жанры (через запятую):</label>
+    <input type="text" id="genres" name="genres" th:value="${genresAsString}">
+    <br>
+    <button type="submit">Сохранить</button>
+</form>
+<a href="/library">Назад в библиотеку</a>
+</body>
+</html>
+

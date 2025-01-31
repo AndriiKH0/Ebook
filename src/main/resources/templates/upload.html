@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Загрузка книги</title>
+</head>
+<body>
+<h1>Загрузка книги</h1>
+<form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+    <input type="file" name="file" required>
+    <button type="submit">Загрузить</button>
+</form>
+
+<div id="loading" style="display: none;">
+    <p>Идет загрузка, пожалуйста, подождите...</p>
+</div>
+
+<script>
+    function showLoading() {
+        document.getElementById("loading").style.display = "block";
+    }
+</script>
+<p th:if="${param.error}" th:text="${param.error}" style="color: red;"></p>
+<a href="/library">Перейти в библиотеку</a>
+</body>
+</html>
