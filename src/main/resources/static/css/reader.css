@@ -653,7 +653,8 @@ p.note-content{
 .font-dropdown {
     display: none;
     position: absolute;
-    background: white;
+    color: #000 !important;
+    background: white !important;
     border-radius: 10px;
     padding: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -729,7 +730,58 @@ p.note-content{
 
 }
 
+/* Боковое меню справа */
+.sidebar-right {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 250px;
+    height: 100vh;
+    background: #f8f8f8;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    overflow-y: auto;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(100%);
+    z-index: 1000;
+}
 
+/* Открытие меню */
+.sidebar-right.open {
+    transform: translateX(0);
+}
+
+/* Список глав */
+#chapterList {
+    list-style: none;
+    padding: 0;
+}
+
+#chapterList li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+    transition: background 0.2s;
+}
+
+#chapterList li:hover {
+    background: #e0e0e0;
+}
+
+/* Кнопка открытия бокового меню */
+.toggle-sidebar-right {
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    font-size: 24px;
+    background: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1101;
+}
 
 
 /* Для мобильных устройств */

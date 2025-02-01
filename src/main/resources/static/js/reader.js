@@ -1,9 +1,13 @@
+
 document.addEventListener("DOMContentLoaded", function () {
+
     const searchInput = document.getElementById("searchInput");
     const searchIcon = document.getElementById("searchIcon");
     const clearSearch = document.getElementById("clearSearch");
     const reader = document.getElementById("reader");
-
+    setTimeout(() => {
+        loadChapters();
+    }, 500);
 
     function highlightText(query) {
         if (!query.trim()) {
@@ -47,6 +51,109 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
+
+    window.loadChapters = loadChapters;
+
+    let allChapters = new Map();
+    let allPagesLoaded = false; // Флаг, загружены ли все страницы
+
+    async function loadChapters() {
+        console.log("⏳ Загружаем главы...");
+
+        if (allPagesLoaded) {
+            console.log("✅ Главы уже загружены, пропускаем повторное сканирование.");
+            return;
+        }
+
+        allChapters.clear(); // Чистим перед новой загрузкой
+
+        let totalPages = parseInt(document.getElementById("pageInput").max); // Общее количество страниц
+        let bookId = window.location.pathname.split("/")[2];
+
+        for (let page = 1; page <= totalPages; page++) {
+            console.log(`🔄 Загружаем страницу ${page} для анализа глав...`);
+            let response = await fetch(`/book/${bookId}?page=${page}`);
+            let text = await response.text();
+            let doc = new DOMParser().parseFromString(text, "text/html");
+            let headings = doc.querySelectorAll("#reader section h3");
+
+            console.log(`📖 Страница ${page}: найдено ${headings.length} глав.`);
+
+            headings.forEach((heading) => {
+                let chapterText = heading.textContent.trim();
+                let chapterId = `chapter-${allChapters.size + 1}`;
+
+                if (!allChapters.has(chapterId)) {
+                    allChapters.set(chapterId, { id: chapterId, page: page });
+                    heading.id = chapterId;
+
+                    let li = document.createElement("li");
+                    li.textContent = chapterText;
+                    li.dataset.target = chapterId;
+
+                    // ✅ Теперь передаем chapterId
+                    li.addEventListener("click", function () {
+                        goToChapter(chapterId);
+                    });
+
+                    document.getElementById("chapterList").appendChild(li);
+                }
+            });
+        }
+
+        allPagesLoaded = true;
+        console.log("✅ Все главы загружены:", allChapters.size);
+    }
+
+
+    function findChapterPage(chapterText) {
+        let chaptersPerPage = 2; // Среднее количество глав на страницу (примерное значение)
+        let chapterIndex = [...allChapters.keys()].indexOf(chapterText);
+        return Math.ceil((chapterIndex + 1) / chaptersPerPage); // Определяем номер страницы
+    }
+
+    function goToChapter(chapterId) {
+        console.log(`🔹 Переход к главе: ${chapterId}`);
+
+        const chapterElement = document.getElementById(chapterId);
+        if (chapterElement) {
+            console.log("✅ Глава найдена на текущей странице, прокручиваем...");
+            chapterElement.scrollIntoView({ behavior: "smooth" });
+            return;
+        }
+
+        console.log("❌ Глава не найдена, загружаем страницу...");
+
+        const chapterData = allChapters.get(chapterId);
+        if (chapterData) {
+            const bookId = window.location.pathname.split("/")[2];
+
+            // ✅ Загружаем страницу, где находится глава
+            loadPage(`/book/${bookId}?page=${chapterData.page}`);
+
+            // ✅ После загрузки плавно скроллим к главе
+            setTimeout(() => {
+                document.getElementById(chapterId)?.scrollIntoView({ behavior: "smooth" });
+            }, 700);
+        } else {
+            console.error("🚨 Глава не найдена в загруженных данных!");
+        }
+    }
+
+
+    // Функция плавного перехода к главе
+    function scrollToChapter(chapterId) {
+        const bookId = window.location.pathname.split("/")[2]; // Получаем ID книги
+
+        const chapterElement = document.getElementById(chapterId);
+        if (chapterElement) {
+            console.log(`🔎 Глава найдена в текущем тексте: ${chapterId}`);
+            chapterElement.scrollIntoView({behavior: "smooth"}); // Плавный скролл
+        } else {
+            console.log(`🔄 Глава ${chapterId} не найдена, загружаем страницу...`);
+            loadPage(`/book/${bookId}?chapter=${chapterId}`); // Загружаем нужную страницу
+        }
+    }
 
 
 
@@ -113,17 +220,18 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // **Очищаем старую подсветку ТОЛЬКО в книге**
+        // Очищаем старую подсветку ТОЛЬКО в книге
         reader.querySelectorAll(".highlight").forEach(el => {
             el.outerHTML = el.innerText;
         });
 
-        // **Обрабатываем текст ТОЛЬКО внутри книги**
-        reader.querySelectorAll("p, span").forEach(element => {
+        // Обрабатываем текст ТОЛЬКО внутри книги
+        // Добавляем "em" к селектору, чтобы обрабатывать и элементы <em>
+        reader.querySelectorAll("p, span, em").forEach(element => {
             element.childNodes.forEach(processNode);
         });
 
-        // **Прокручиваем к первому выделенному фрагменту**
+        // Прокручиваем к первому выделенному фрагменту
         if (firstHighlightedElement) {
             setTimeout(() => {
                 firstHighlightedElement.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -132,16 +240,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-
     document.addEventListener("click", function (event) {
         if (!event.target.classList.contains("highlight")) {
             console.log("Очищаем подсветку");
             highlightText("");  // Убираем подсветку
         }
     });
-
-
-
 
     searchIcon.addEventListener("click", function (event) {
         event.preventDefault();
@@ -169,7 +273,16 @@ document.addEventListener("DOMContentLoaded", function () {
         searchInput.value = "";
         highlightText("");
     });
+
 });
+
+
+
+
+
+
+
+
 
     function setTheme(theme) {
     let body = document.body;
@@ -187,8 +300,6 @@ document.addEventListener("DOMContentLoaded", function () {
 }
 
     // При загрузке страницы применяем сохраненную тему
-
-
 
     function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("open");
@@ -219,14 +330,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function loadPage(url) {
-        // Если остаемся на той же странице (нажали на заметку), просто скроллим к выделенному фрагменту
         if (url === lastPage) {
             console.log("✅ Остаемся на текущей странице, прокручиваем к заметке");
             scrollToHighlighted();
             return;
         }
 
-        // Если страница меняется, обновляем lastPage
         lastPage = url;
 
         fetch(url)
@@ -237,6 +346,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 const newContent = doc.getElementById("reader").innerHTML;
                 reader.innerHTML = newContent;
 
+                document.querySelectorAll("emphasis").forEach(el => {
+                    let em = document.createElement("em");
+                    em.innerHTML = el.innerHTML;
+                    el.replaceWith(em);
+                });
                 // Обновляем номер страницы
                 const newPageNumber = doc.querySelector("#pageInput").value;
                 pageInput.value = newPageNumber;
@@ -255,9 +369,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // После загрузки страницы плавно скроллим к заметке (если она есть)
                 setTimeout(scrollToHighlighted, 200);
+
+                // 🔥 Загружаем главы после загрузки новой страницы
+                setTimeout(loadChapters, 500);
             })
             .catch(error => console.error("Ошибка загрузки страницы:", error));
     }
+
+
 
 // Добавляем событие на кнопки "Следующая" и "Предыдущая" страница
 
@@ -273,7 +392,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         console.log("Обновляем навигацию:", { newPrev, newNext });
 
-        // 🛑 Исправление для кнопки "Назад"
+        // 🛑 Проверяем, есть ли новая кнопка "Назад"
         if (newPrev) {
             if (!prevPage) {
                 prevPage = document.createElement("a");
@@ -294,8 +413,15 @@ document.addEventListener("DOMContentLoaded", function () {
             prevPage.style.display = "none";
         }
 
-        // ✅ Исправление для кнопки "Вперед"
+        // ✅ Проверяем, есть ли новая кнопка "Вперед"
         if (newNext) {
+            if (!nextPage) {
+                nextPage = document.createElement("a");
+                nextPage.id = "nextPage";
+                nextPage.textContent = "Вперед";
+                nextPage.style.marginLeft = "10px";
+                document.querySelector(".navigation").appendChild(nextPage);
+            }
             nextPage.href = newNext.href;
             nextPage.style.display = "inline";
 
@@ -308,6 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
             nextPage.style.display = "none";
         }
     }
+
 
 
     const fontSelectIcon = document.getElementById("fontSelectIcon");
@@ -402,6 +529,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.loadPage = loadPage;
     attachNavigationHandlers();
+
+    document.getElementById("toggleSidebarRight").addEventListener("click", function () {
+        document.getElementById("sidebarRight").classList.toggle("open");
+    });
+
+
+    // Функция создания списка глав
+
+
+
+
+
+
+
+    // Загружаем главы при старте
+
 });
+
 
 

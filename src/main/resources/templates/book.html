@@ -3,10 +3,12 @@
 <head>
     <title th:text="${ebook.title}">Читалка книги</title>
     <link rel="stylesheet" th:href="@{/css/reader.css}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js"></script>
     <script src="/js/reader.js"></script>
     <script src="/js/scripts.js"></script>
     <script src="/js/notes.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <style>
         body {
             background-size: cover;
@@ -135,6 +137,14 @@
     <div class="font-option" data-font="Courier New" style="font-family: 'Courier New';">Courier New</div>
     <div class="font-option" data-font="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</div>
 </div>
+<!-- Боковое меню для структуры книги -->
+<div class="sidebar-right" id="sidebarRight">
+    <h3>Структура книги</h3>
+    <ul id="chapterList">
+        <!-- Главы будут добавляться динамически -->
+    </ul>
+</div>
+
 <!-- Панель заметок -->
 <div class="notes-panel" id="notesPanel">
     <h3>Заметки</h3>
@@ -153,7 +163,9 @@
     <button id="saveNote">Сохранить</button>
     <button id="cancelNote">Отмена</button>
 </div>
-
+<button id="toggleSidebarRight" class="icon-btn toggle-sidebar-right">
+    ☰
+</button>
 
 <div class="container">
     <!-- Контейнер для текста -->
@@ -177,15 +189,7 @@
         </div>
     </div>
 
-
-
 </div>
-
-
-
-
-
-
 
 </body>
 </html>
