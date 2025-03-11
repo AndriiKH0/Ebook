@@ -16,7 +16,7 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login() {
-        return "login"; // Возвращает шаблон login.html
+        return "login";
     }
     @Autowired
     private UserRepository userRepository;
@@ -30,15 +30,15 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute User user) {
-        // Проверяем, есть ли уже такой пользователь
+
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            return "redirect:/register?error=exists"; // Если пользователь существует, редирект с ошибкой
+            return "redirect:/register?error=exists";
         }
-        // Кодируем пароль перед сохранением
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Set.of("ROLE_USER")); // Назначаем роли
-        userRepository.save(user); // Сохраняем пользователя
-        return "redirect:/login"; // Перенаправляем на логин
+        user.setRoles(Set.of("ROLE_USER"));
+        userRepository.save(user);
+        return "redirect:/login";
     }
 
 }

@@ -27,7 +27,7 @@ public class UserController {
         Set<String> roles = new HashSet<>();
         roles.add(role);
 
-        // Шифруем пароль перед сохранением
+
         String encryptedPassword = passwordEncoder.encode(password);
 
         User user = new User(username, encryptedPassword, roles);

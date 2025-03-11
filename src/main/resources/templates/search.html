@@ -1,28 +1,54 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Поиск книг</title>
+    <title>Book Search</title>
+    <link rel="stylesheet" th:href="@{/css/library.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<h1>Поиск книг</h1>
-<form th:action="@{/search}" method="get">
-    <input type="text" name="query" th:value="${query}" placeholder="Введите запрос">
-    <select name="filter">
-        <option value="title" th:selected="${filter == 'title'}">Название</option>
-        <option value="author" th:selected="${filter == 'author'}">Автор</option>
-        <option value="genre" th:selected="${filter == 'genre'}">Жанр</option>
-    </select>
-    <button type="submit">Искать</button>
-</form>
 
-<h2>Результаты:</h2>
-<ul>
-    <li th:each="book : ${results}">
+<header>
+    <h1>Book Search</h1>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav id="nav-menu">
+        <a href="/library">Back to Library</a>
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+            <button type="submit" class="nav-btn">Logout</button>
+        </form>
+    </nav>
+</header>
+
+<div class="search-container">
+    <form th:action="@{/search}" method="get">
+        <input type="text" name="query" th:value="${query}" placeholder="Enter your search" required>
+        <select name="filter">
+            <option value="title" th:selected="${filter == 'title'}">Title</option>
+            <option value="author" th:selected="${filter == 'author'}">Author</option>
+            <option value="genre" th:selected="${filter == 'genre'}">Genre</option>
+        </select>
+        <button type="submit" class="search-btn">Search</button>
+    </form>
+</div>
+
+<h2 class="results-title">Results:</h2>
+
+<div class="library-container">
+    <div class="book-card" th:each="book : ${results}">
         <a th:href="@{/book/{id}(id=${book.id})}">
-            <span th:text="${book.title}"></span> - <span th:text="${book.author}"></span>
+            <img th:src="@{'/images/' + ${book.coverFilename}}" alt="Book Cover">
+            <h2 th:text="${book.title}"></h2>
         </a>
-    </li>
-</ul>
-<a href="/library">Назад к библиотеке</a>
+        <p class="book-author" th:text="${book.author}"></p>
+        <p class="book-genres">
+            <span th:each="genre : ${book.genres}" th:text="${genre}" class="genre-badge"></span>
+        </p>
+    </div>
+</div>
+<script>
+    function toggleMenu() {
+        let nav = document.getElementById("nav-menu");
+        nav.classList.toggle("show");
+    }
+</script>
 </body>
 </html>

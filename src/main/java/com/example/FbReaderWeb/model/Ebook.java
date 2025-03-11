@@ -9,6 +9,20 @@ import jakarta.persistence.*;
 
 @Entity
 public class Ebook {
+    @Column(name = "last_page", nullable = false)
+    private int lastPage = 1;
+    @Column(name = "book_theme")
+    private String bookTheme; // Убираем значение по умолчанию, разрешаем null
+
+    public String getBookTheme() {
+        return bookTheme;
+    }
+
+    public void setBookTheme(String bookTheme) {
+        this.bookTheme = bookTheme;
+    }
+
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,23 +31,35 @@ public class Ebook {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public User getUser() {
-        return user;
-    }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    @Column(name = "words_per_screen", nullable = false)
+    private int wordsPerScreen = 2000;
+
+    @Column(name = "book_font")
+    private String bookFont;
+
+    @Column(name = "book_font_size")
+    private Integer bookFontSize;
+    @Column(name = "book_line_height")
+    private Double bookLineHeight; // Добавляем поле для межстрочного интервала
+
+    @Column(name = "two_page_mode", nullable = false)
+    private boolean twoPageMode = false; // Значение по умолчанию - false
 
 
+    @Column(nullable = true)
+    private String coverFilename;
+
+    @Column(columnDefinition = "TEXT")
     private String title;
     private String author;
+
 
     @Lob
     private String content;
 
     @Column
-    @ElementCollection(fetch = FetchType.EAGER) // Убедитесь, что здесь используется EAGER для загрузки коллекции.
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> genres = new ArrayList<>();
 
     public Ebook() {}
@@ -44,7 +70,62 @@ public class Ebook {
         this.content = content;
     }
 
-    // Геттеры и сеттеры
+    public String getBookFont() {
+        return bookFont;
+    }
+
+    @OneToMany(mappedBy = "ebook", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Note> notes = new ArrayList<>();
+
+    // Геттер и сеттер для notes
+    public List<Note> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(List<Note> notes) {
+        this.notes = notes;
+    }
+
+    public void setBookFont(String bookFont) {
+        this.bookFont = bookFont;
+    }
+    public Double getBookLineHeight() {
+        return bookLineHeight;
+    }
+
+    public void setBookLineHeight(Double bookLineHeight) {
+        this.bookLineHeight = bookLineHeight;
+    }
+    public Integer getBookFontSize() {
+        return bookFontSize;
+    }
+
+    public void setBookFontSize(Integer bookFontSize) {
+        this.bookFontSize = bookFontSize;
+    }
+
+    public int getLastPage() {
+        return lastPage;
+    }
+
+    public void setLastPage(int lastPage) {
+        this.lastPage = lastPage;
+    }
+
+    public boolean isTwoPageMode() {
+        return twoPageMode;
+    }
+
+    public void setTwoPageMode(boolean twoPageMode) {
+        this.twoPageMode = twoPageMode;
+    }
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
     public Long getId() {
         return id;
     }
@@ -84,4 +165,13 @@ public class Ebook {
     public void setGenres(List<String> genres) {
         this.genres = genres;
     }
+
+    public String getCoverFilename() {
+        return coverFilename;
+    }
+
+    public void setCoverFilename(String coverFilename) {
+        this.coverFilename = coverFilename;
+    }
+
 }

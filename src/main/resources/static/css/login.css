@@ -1,0 +1,91 @@
+/* Общие стили */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Georgia, 'Times New Roman', Serif,serif;
+    background: linear-gradient(90deg, #f90126,#ee0066,#c61698,#8445b5,#1457b7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Контейнер формы */
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+}
+
+/* Заголовок */
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Поля ввода */
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Кнопка входа */
+button {
+    width: 100%;
+    background: linear-gradient(90deg, #6a64f6,#a96ddf,#c77fcd,#a789c9);
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: box-shadow 0.3s ease-in-out;
+
+}
+
+button:hover {
+
+    box-shadow: 0 0 15px rgba(167, 137, 201, 0.8);
+}
+.register-link {
+    display: block;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #bf26ea;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.register-link:hover {
+
+    text-decoration: underline;
+}
+/* Адаптивность */
+@media (max-width: 400px) {
+    .container {
+        padding: 20px;
+    }
+}

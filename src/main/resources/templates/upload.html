@@ -1,25 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Загрузка книги</title>
+    <title>Upload Book</title>
+    <link rel="stylesheet" th:href="@{/css/library.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<h1>Загрузка книги</h1>
-<form action="/upload" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-    <input type="file" name="file" required>
-    <button type="submit">Загрузить</button>
-</form>
 
-<div id="loading" style="display: none;">
-    <p>Идет загрузка, пожалуйста, подождите...</p>
+<header>
+    <h1>Upload Book</h1>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav id="nav-menu">
+        <a href="/library">Back to Library</a>
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+            <button type="submit" class="nav-btn">Logout</button>
+        </form>
+    </nav>
+</header>
+
+<div class="upload-container">
+    <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="startUpload(event)">
+        <input type="file" name="file" id="fileInput" accept=".fb2" required>
+        <button type="submit" class="upload-btn"> Upload</button>
+    </form>
+
+    <div id="loading" class="loading-container" style="display: none;">
+        <p>Uploading... Please wait</p>
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-    function showLoading() {
-        document.getElementById("loading").style.display = "block";
+    function startUpload(event) {
+        event.preventDefault();
+
+        let fileInput = document.getElementById("fileInput");
+        let file = fileInput.files[0];
+
+        if (!file) {
+            alert("Please select an .fb2 file!");
+            return;
+        }
+
+        if (!file.name.endsWith(".fb2")) {
+            alert("Only .fb2 files are allowed!");
+            return;
+        }
+
+        let form = event.target;
+        let loadingDiv = document.getElementById("loading");
+        let progressBar = document.querySelector(".progress");
+
+        loadingDiv.style.display = "block";
+
+        let width = 0;
+        let interval = setInterval(function () {
+            if (width >= 100) {
+                clearInterval(interval);
+                setTimeout(() => form.submit(), 500);
+            } else {
+                width += 5;
+                progressBar.style.width = width + "%";
+            }
+        }, 300);
     }
 </script>
-<p th:if="${param.error}" th:text="${param.error}" style="color: red;"></p>
-<a href="/library">Перейти в библиотеку</a>
+<script>
+    function toggleMenu() {
+        let nav = document.getElementById("nav-menu");
+        nav.classList.toggle("show");
+    }
+</script>
+<p th:if="${param.error}" th:text="${param.error}" class="error-message"></p>
+
 </body>
 </html>

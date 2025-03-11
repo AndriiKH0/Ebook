@@ -1,23 +1,85 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Редактировать книгу</title>
+    <title>Edit Book</title>
+    <link rel="stylesheet" th:href="@{/css/library.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<h1>Редактировать книгу</h1>
-<form th:action="@{/edit/{id}(id=${ebook.id})}" method="post">
-    <label for="title">Название:</label>
-    <input type="text" id="title" name="title" th:value="${ebook.title}" required>
-    <br>
-    <label for="author">Автор:</label>
-    <input type="text" id="author" name="author" th:value="${ebook.author}" required>
-    <br>
-    <label for="genres">Жанры (через запятую):</label>
-    <input type="text" id="genres" name="genres" th:value="${genresAsString}">
-    <br>
-    <button type="submit">Сохранить</button>
-</form>
-<a href="/library">Назад в библиотеку</a>
+<header>
+    <h1>Edit Book</h1>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav id="nav-menu">
+        <a href="/library">Back to Library</a>
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+            <button type="submit" class="nav-btn">Logout</button>
+        </form>
+    </nav>
+</header>
+
+<div class="edit-container">
+    <form th:action="@{/edit/{id}(id=${ebook.id})}" method="post" onsubmit="return validateForm()">
+        <label for="title">Book title:</label>
+        <input type="text" id="title" name="title" th:value="${ebook.title}"
+               required maxlength="30" pattern="^[a-zA-Zа-яА-Я0-9ёЁ ,.!?-]+$"
+               title="Only letters, numbers, spaces, and punctuation are allowed.">
+
+        <label for="author">Author:</label>
+        <input type="text" id="author" name="author" th:value="${ebook.author}"
+               required maxlength="30" pattern="^[a-zA-Zа-яА-ЯёЁ ]+$"
+               title="Only letters and spaces are allowed.">
+
+        <label for="genres">Genres (separated by commas):</label>
+        <input type="text" id="genres" name="genres" th:value="${genresAsString}"
+               required maxlength="30"
+               title="Enter up to 5 genres, separated by commas.">
+
+        <p id="error-message" class="error-message" style="display: none; color: red;"></p>
+
+        <button type="submit" class="save-btn">Save</button>
+    </form>
+</div>
+
+<script>
+    function validateForm() {
+        let title = document.getElementById("title").value.trim();
+        let author = document.getElementById("author").value.trim();
+        let genres = document.getElementById("genres").value.trim();
+        let errorMessage = document.getElementById("error-message");
+
+
+        if (title.length < 3) {
+            errorMessage.textContent = "The book title must be at least 3 characters long!";
+            errorMessage.style.display = "block";
+            return false;
+        }
+
+
+        let authorRegex = /^[a-zA-Zа-яА-ЯёЁ ]+$/;
+        if (!authorRegex.test(author)) {
+            errorMessage.textContent = "The author's name should contain only letters and spaces!";
+            errorMessage.style.display = "block";
+            return false;
+        }
+
+
+        let genreList = genres.split(",").map(g => g.trim());
+        if (genreList.length > 5) {
+            errorMessage.textContent = "You can select up to 5 genres!";
+            errorMessage.style.display = "block";
+            return false;
+        }
+
+
+        errorMessage.style.display = "none";
+        return true;
+    }
+</script>
+<script>
+    function toggleMenu() {
+        let nav = document.getElementById("nav-menu");
+        nav.classList.toggle("show");
+    }
+</script>
 </body>
 </html>
-

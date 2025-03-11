@@ -1,34 +1,56 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Библиотека книг</title>
+    <title>Library of books</title>
+    <link rel="stylesheet" th:href="@{/css/library.css}">
+    <script src="/js/genres.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
-<h1>Моя библиотека</h1>
-<ul>
-    <li th:each="ebook : ${ebooks}">
+<header>
+    <h1>My library</h1>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav id="nav-menu">
+        <a href="/">Download new book</a>
+        <a href="/search">Search for books</a>
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+            <button type="submit" class="nav-btn">Logout</button>
+        </form>
+    </nav>
+</header>
+
+<div class="library-container">
+    <div class="book-card" th:each="ebook : ${ebooks}"
+         th:attr="data-genres=${#strings.listJoin(ebook.genres, ', ')}"
+         onmousemove="showTooltip(event, this)"
+         onmouseleave="hideTooltip()">
         <a th:href="@{/book/{id}(id=${ebook.id})}">
+            <img th:src="@{'/images/' + ${ebook.coverFilename}}" alt="Book Cover">
             <h2 th:text="${ebook.title}"></h2>
         </a>
         <p th:text="${ebook.author}"></p>
+        <div class="book-actions">
+            <a th:href="@{/edit/{id}(id=${ebook.id})}" class="icon-btn edit-btn">
+                <i class="fas fa-edit"></i>
+            </a>
+            <form th:action="@{/delete/{id}(id=${ebook.id})}" method="post">
+                <button type="submit" class="icon-btn delete-btn">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 
-        <!-- Отображение жанров -->
-        <ul>
-            <li th:each="genre : ${ebook.genres}">
-                <span th:text="${genre}"></span>
-            </li>
-        </ul>
 
-
-
-        <form th:action="@{/delete/{id}(id=${ebook.id})}" method="post">
-            <button type="submit">Удалить</button>
-        </form>
-        <a th:href="@{/edit/{id}(id=${ebook.id})}">Редактировать</a>
-    </li>
-</ul>
-<a href="/">Назад к загрузке</a>
-<a href="/search">Поиск книг</a>
-
+<div id="genre-tooltip" class="genre-tooltip"></div>
+<script>
+    function toggleMenu() {
+        let nav = document.getElementById("nav-menu");
+        nav.classList.toggle("show");
+    }
+</script>
 </body>
+
 </html>

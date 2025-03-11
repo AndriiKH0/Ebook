@@ -3,21 +3,39 @@
 }
 
 body {
-    font-family: Georgia, 'Times New Roman', serif;
+    background-size: cover;
+    font-family: Georgia, 'Times New Roman', Serif,serif;
     margin: 0;
     padding: 0;
 
 }
 
 .container {
-    max-width: 1800px;
-    margin: 20px auto;
-    padding: 20px;
+    max-width: 100%;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
-/* Убираем лишний отступ в оригинальной теме */
+
+.reader-container {
+    width: auto;
+    max-width: 1200px;/* Уменьшаем ширину для одностраничного режима */
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 40px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    overflow-x: hidden;
+}
+
+
+.container, .reader-container {
+    background: #fff;
+    color: #000;
+
+}
 
 .container h1 {
     text-align: center;
@@ -44,32 +62,36 @@ body {
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.95);
-    padding: 10px 15px;
+    padding: 8px 12px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
-    gap: 10px;
-    max-width: 90%;
-    min-width: 250px; /* Минимальная ширина, чтобы не смещалось */
     justify-content: center;
+    gap: 8px;
+    min-width: 120px;
 }
 
-/* Кнопки "Назад" и "Вперед" */
+/* Кнопки */
 .navigation a {
-    display: inline-block;
     text-decoration: none;
     font-weight: bold;
-    padding: 5px 15px; /* Делаем кнопки одинаковыми */
-    min-width: 80px; /* Фиксируем ширину */
+    padding: 8px;
     text-align: center;
     font-size: 16px;
     color: black;
     border-radius: 5px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.1);
+    transition: background 0.2s;
 }
 
-.navigation a.hidden {
-    visibility: hidden; /* Скрываем, но место оставляем */
+.navigation a:hover {
+    background: rgba(0, 0, 0, 0.1);
 }
 
 /* Поле ввода */
@@ -84,71 +106,105 @@ body {
     color: #000;
 }
 
-/* Текст "из 98" */
+/* Текст */
 .navigation span {
     font-size: 16px;
     font-weight: bold;
     color: #333;
+    text-align: center;
+
 }
+
+/* Убираем стрелки */
+.navigation input::-webkit-outer-spin-button,
+.navigation input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.navigation input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.mode-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin: 10px 0;
+    position: relative;
+}
+/* Контейнер ползунка */
+.line-height-container {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.95); /* Легкая прозрачность */
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Мягкая тень */
+    display: none;
+    z-index: 1000;
+    width: 180px;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.95); /* Плавное уменьшение при закрытии */
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* Когда контейнер активен (открыт) */
+.line-height-container.active {
+    display: block;
+    opacity: 1;
+    transform: translateX(-50%) scale(1); /* Плавное появление */
+}
+
+/* Ползунок */
+#lineHeightSlider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: #ccc;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+/* Стилизация ползунка (круглая точка) */
+#lineHeightSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, background 0.3s;
+}
+
+#lineHeightSlider::-webkit-slider-thumb:hover {
+    background: #0056b3;
+    transform: scale(1.1); /* Увеличение при наведении */
+}
+
+/* Значение line-height */
+#lineHeightValue {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+}
+
 #prevPage {
     margin: 0 !important;
 }
 
-/* Обычное оформление */
-.container, .reader-container {
-    background: #fff;
-    color: #000;
-}
-/* Фиксируем высоту контейнера, чтобы исключить скачки */
-.reader-container {
-    min-height: 100vh; /* Гарантирует, что высота не меняется */
-}
-
-/* Фиксируем отступы */
-.reader-container,
-.container {
-    padding: 20px !important;
-    margin: 0 auto !important;
-}
-
-/* Убираем возможное влияние box-shadow */
-
-.theme-night .reader-container, .theme-night .container { background: #333; color: #fff; }
-.theme-paper .reader-container, .theme-paper .container { background: #f5deb3; color: #000; }
-.theme-accent .reader-container, .theme-accent .container { background: #eee8aa; color: #000; }
-.theme-day .reader-container, .theme-day .container { background: #ffffe0; color: #000; }
-.theme-focus .reader-container, .theme-focus .container { background: #dcdcdc; color: #000; }
 
 
-/* Тёмная тема */
-.reader-container.theme-night {
-    background: #333;
-    color: #fff;
-}
 
-/* Бумажная тема */
-.reader-container.theme-paper {
-    background: #f5deb3;
-    color: #000;
-}
 
-/* Акцент */
-.reader-container.theme-accent {
-    background: #eee8aa;
-    color: #000;
-}
 
-/* День */
-.reader-container.theme-day {
-    background: #ffffe0;
-    color: #000;
-}
-
-/* Фокус */
-.reader-container.theme-focus {
-    background: #dcdcdc;
-    color: #000;
-}
 
 /* Шторка слева */
 .sidebar {
@@ -156,19 +212,20 @@ body {
     left: 0;
     top: 0;
     width: 250px;
-    height: 100vh; /* Теперь боковое меню будет ровно по высоте экрана */
+    height: 100vh;
     color: #000 !important;
     background: #f8f8f8 !important;
-    padding: 20px;
+    padding: 165px 20px 20px;/* Оставляем padding */
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease-in-out;
     transform: translateX(-100%);
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Теперь "назад в библиотеку" останется внизу */
+    justify-content: space-between;
     align-items: flex-start;
-    overflow-y: auto; /* Если слишком длинное меню, появится прокрутка */
+    overflow-y: auto;
+     /* Двигаем контент вниз, чтобы не перекрывалось заголовком */
 }
 .library-back {
     display: block;
@@ -212,20 +269,67 @@ body {
     position: fixed;
     left: 10px;
     top: 10px;
-    font-size: 24px;
-    background: #333;
+    font-size: 20px;
+    background: #000000;
     color: white;
     border: none;
     cursor: pointer;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: 10px;
     z-index: 1100;
 }
 .sidebar h2 {
     margin-top: 50px;
+
+}
+.menu-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Растягиваем полоску на всю ширину */
+    height: 160px;
+    background: linear-gradient(90deg, #f90126,#ee0066,#c61698,#8445b5,#1457b7);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+
+    z-index: 10;
 }
 
+/* Делаем заголовок в полоске */
+.menu-header h2 {
+    margin-top: 50px;
+    padding-left: 20px;
+}
+.menu-header-r {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Растягиваем полоску на всю ширину */
+    height: 160px;
+    background: linear-gradient(90deg,#1457b7, #8445b5, #c61698, #ee0066, #f90126);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
 
+    z-index: 10;
+}
+
+/* Делаем заголовок в полоске */
+.menu-header-r h2 {
+    margin-top: 50px;
+    padding-left: 20px;
+}
 
 
 
@@ -306,14 +410,72 @@ body {
     display: block;
 }
 
-/* Разные темы */
-.theme-original { background: #fff; color: #000; outline: 2px solid #ddd; }
-.theme-night { background: #333; color: #fff; }
-.theme-paper { background: #f5deb3; color: #000; outline: 2px solid #e4c590; }
-.theme-accent { background: #eee8aa; color: #000; outline: 2px solid #ddd38a; }
-.theme-day { background: #ffffe0; color: #000; outline: 2px solid #e1c48b; }
-.theme-focus { background: #dcdcdc; color: #000; outline: 2px solid #b0b0b0; }
+/* 🖤 Оптимизированная ночная тема */
+.theme-night .reader-container, .theme-night .container {
+    background: #121212; /* Глубокий темно-серый, а не #333 */
+    color: #E0E0E0; /* Мягкий белый, а не чистый */
+}
 
+.theme-night {
+    background: #121212;
+    color: #E0E0E0;
+    outline: 2px solid #292929; /* Не слишком резкий контур */
+}
+
+/* 📜 Оптимизированная бумажная тема */
+.theme-paper .reader-container, .theme-paper .container {
+    background: #FAF3E0; /* Теплый бежевый (бумага) */
+    color: #3C3C3C; /* Тёмно-серый, а не чисто чёрный */
+}
+
+.theme-paper {
+    background: #FAF3E0;
+    color: #3C3C3C;
+    outline: 2px solid #E4C590;
+}
+
+/* 🌅 Оптимизированная дневная тема */
+.theme-day .reader-container, .theme-day .container {
+    background: #FFF8DC; /* Мягкий кремовый вместо жёлтого */
+    color: #3C3C3C;
+}
+
+.theme-day {
+    background: #FFF8DC;
+    color: #3C3C3C;
+    outline: 2px solid #E1C48B;
+}
+
+/* 🍂 Оптимизированная сепия (Accent) */
+.theme-accent .reader-container, .theme-accent .container {
+    background: #F5E6C4; /* Тёплый светло-коричневый */
+    color: #5C4033; /* Коричневый текст */
+}
+
+.theme-accent {
+    background: #F5E6C4;
+    color: #5C4033;
+    outline: 2px solid #DDC38A;
+}
+
+/* 🎯 Оптимизированная фокусная тема */
+.theme-focus .reader-container, .theme-focus .container {
+    background: #E5E5E5; /* Светло-серый, но не слишком яркий */
+    color: #333;
+}
+
+.theme-focus {
+    background: #E5E5E5;
+    color: #333;
+    outline: 2px solid #B0B0B0;
+}
+
+/* ⚪ Оптимизированная оригинальная (классическая) тема */
+.theme-original {
+    background: #FDFDFD; /* Немного мягче, чем чистый белый */
+    color: #222;
+    outline: 2px solid #DDD;
+}
 /* Выбранная тема */
 .theme-option.active {
     outline: 2px solid #000;
@@ -321,22 +483,41 @@ body {
 }
 
 
-
-
-
 /* Для текста */
 .page p {
     margin-bottom: 20px;
 }
 
-
-
-
 .icon-bar {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 8px;
-    margin-top: 6px;
+
+    margin: 10px 0;
+    position: relative;
+    height: 90px; /* Фиксированная высота для предотвращения сдвига */
+}
+
+#searchInput {
+    position: absolute;
+    top: 45px; /* Фиксированное положение под кнопками */
+    left: 0;
+    height: 35px;
+    width: calc(100% - 40px); /* Оставляем место для кнопки очистки */
+    padding: 5px 25px 5px 5px; /* Отступ справа для кнопки */
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    display: none;
+}
+
+#clearSearch {
+    position: absolute;
+    top: 45px; /* То же значение, что и у searchInput */
+    right: 0;
+
+    display: none;
+    width: 35px;
+    height: 35px;
 }
 
 /* Базовый стиль кнопок */
@@ -347,6 +528,7 @@ body {
     cursor: pointer;
     color: #333;
     padding: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     border-radius: 50%;
     width: 35px;
     height: 35px;
@@ -359,6 +541,10 @@ body {
 .icon-btn:hover {
     background: #ddd;
 }
+.icon-btn i {
+    color: #333 !important;
+    font-size: 16px;
+}
 
 /* Кнопка поиска */
 .search-icon-btn {
@@ -368,34 +554,33 @@ body {
 /* Кнопка заметок */
 .notes-icon-btn {
     position: fixed;
-    top: 60px;
+    top: 110px;
     right: 20px;
     z-index: 1000;
 }
 /* Панель заметок */
 /* Панель заметок теперь правильно позиционируется */
 /* Окно списка заметок - теперь не в боковой панели */
-.notes-panel {
-    background: #f8f8f8;
-    color: #333;
-    position: fixed;
-    right: 20px;
-    top: 60px;
-    width: 320px;
-    max-height: 80vh;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    overflow-y: auto;
-    display: none;
-    z-index: 1000;
-    font-family: Georgia, 'Times New Roman', Serif, serif;
+
+.notes-panel a {
+    font-weight: bold;
+
+    transition: color 0.2s;
+}
+
+.notes-panel a:hover {
+
+    text-decoration: underline;
 }
 #notesList {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-    list-style: none; /* Если не нужны точки */
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px; /* Компенсируем полосу прокрутки */
+    margin-bottom: 10px; /* Отступ от кнопки */
+    padding-left: 5px !important;
+
 }
+
 /* Окно добавления заметки - появляется в месте выделения */
 .add-note-popup {
     position: absolute;
@@ -407,6 +592,36 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     display: none;
     z-index: 1100;
+}
+.add-note-popup h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.add-note-popup input {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.add-note-popup button {
+    width: 48%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-note-popup #saveNote {
+    background: #4CAF50;
+    color: white;
+}
+
+.add-note-popup #cancelNote {
+    background: #f44336;
+    color: white;
 }
 .color-picker-container {
     display: flex;
@@ -485,6 +700,7 @@ body {
 
 /* Кнопки в заметке */
 .note-footer {
+    font-weight: bold;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -502,83 +718,49 @@ body {
     transition: background 0.2s;
 }
 
+
+.note-footer a {
+    flex-grow: 1;
+
+    font-size: 12px;
+
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+
+}
+
+
 .note-footer button:hover {
     background: rgba(255, 255, 255, 0.4);
 }
 
 /* Улучшаем кнопку "Очистить заметки" */
 #clearNotes {
-    width: 100%;
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: calc(100% + 30px); /* Растягиваем на всю ширину + компенсация padding панели */
+    margin-left: -15px; /* Компенсируем padding панели слева */
+    margin-bottom: -15px; /* Компенсируем padding панели снизу */
+    margin-top: 10px;
     background: #333;
     color: white;
-    padding: 10px;
-    border-radius: 10px;
+    padding: 10px 15px; /* Учитываем отрицательные margin */
+    border-radius: 0 0 12px 12px; /* Скругляем только нижние углы */
     cursor: pointer;
     font-size: 14px;
-    margin-top: 10px;
     transition: background 0.2s;
+    z-index: 2;
 }
+
 
 #clearNotes:hover {
     background: #222;
-}
-/* Окно добавления заметки теперь появляется в месте выделения */
-
-
-/* Исправленный стиль иконок внутри кнопок */
-.icon-btn i {
-    color: #333 !important;
-    font-size: 16px;
-}
-
-
-
-.add-note-popup h3 {
-    margin-top: 0;
-    text-align: center;
-}
-
-.add-note-popup input {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
-.add-note-popup button {
-    width: 48%;
-    padding: 8px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.add-note-popup #saveNote {
-    background: #4CAF50;
-    color: white;
-}
-
-.add-note-popup #cancelNote {
-    background: #f44336;
-    color: white;
-}
-
-
-
-
-#searchInput {
-    flex-grow: 1;
-    max-width: 120px;
-    padding: 5px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    outline: none;
-    display: none; /* Скрываем изначально */
-}
-#clearSearch {
-    display: none; /* Кнопка сброса тоже скрыта */
 }
 
 
@@ -587,17 +769,18 @@ body {
 }
 
 .highlight {
-    background-color: yellow
-
-
+    background-color: yellow;
 }
 .highlight-note {
     background: yellow;
 
 }
-
-
-
+.italic {
+    font-style: italic;
+}
+i {
+    font-style: italic;
+}
 
 
 .note-content {
@@ -606,12 +789,6 @@ body {
     white-space: pre-line !important;
 }
 
-
-.note-footer {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 5px;
-}
 p.note-content{
     margin-top: 5px !important;
     margin-bottom: 5px !important;
@@ -626,10 +803,24 @@ p.note-content{
 }
 
 #notesPanel {
-    max-height: 400px; /* Ограничиваем высоту панели */
-    overflow-y: auto;  /* Включаем вертикальную прокрутку */
-    overflow-x: hidden; /* Отключаем горизонтальную прокрутку */
-    scrollbar-width: thin; /* Для Firefox */
+    position: fixed;
+    right: 20px;
+    top: 60px;
+    background: #f8f8f8;
+    color: #333;
+    width: 320px;
+    max-height: 40vh;
+    border-radius: 12px;
+    padding: 15px 15px 0 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    font-family: Georgia, 'Times New Roman', Serif, serif;
+    display: none;
+
+    /* Настройки для улучшенной прокрутки */
+
+    flex-direction: column;
+    overflow: hidden; /* Предотвращает прокрутку всей панели */
 }
 
 #notesPanel::-webkit-scrollbar {
@@ -640,16 +831,7 @@ p.note-content{
     background-color: #aaa;
     border-radius: 3px;
 }
-.notes-panel a {
-    font-weight: bold;
 
-    transition: color 0.2s;
-}
-
-.notes-panel a:hover {
-
-    text-decoration: underline;
-}
 .font-dropdown {
     display: none;
     position: absolute;
@@ -696,39 +878,7 @@ p.note-content{
     }
 }
 /* Выровняем кнопки "Стр. X", "Свернуть" и "Удалить" */
-.note-footer {
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-}
 
-.note-footer a {
-    flex-grow: 1;
-
-    font-size: 12px;
-
-    border: none;
-    padding: 6px 10px;
-    border-radius: 5px;
-    color: white;
-    cursor: pointer;
-    display: inline-block;
-
-}
-
-.note-footer button {
-
-    padding: 6px 10px;
-    font-size: 12px;
-
-    border: none;
-    border-radius: 5px;
-    color: white;
-    cursor: pointer;
-
-}
 
 /* Боковое меню справа */
 .sidebar-right {
@@ -737,13 +887,14 @@ p.note-content{
     top: 0;
     width: 250px;
     height: 100vh;
+    color:black !important;
     background: #f8f8f8;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-    padding: 20px;
+    padding: 160px 20px 20px;
     overflow-y: auto;
     transition: transform 0.3s ease-in-out;
     transform: translateX(100%);
-    z-index: 1000;
+    z-index: 1101;
 }
 
 /* Открытие меню */
@@ -759,6 +910,7 @@ p.note-content{
 
 #chapterList li {
     padding: 10px;
+    font-weight: bold;
     cursor: pointer;
     border-bottom: 1px solid #ddd;
     transition: background 0.2s;
@@ -773,30 +925,700 @@ p.note-content{
     position: fixed;
     right: 10px;
     top: 10px;
-    font-size: 24px;
-    background: #333;
+    font-size: 20px;
+    background: #000000;
     color: white;
     border: none;
     cursor: pointer;
     padding: 10px;
-    border-radius: 5px;
-    z-index: 1101;
+    border-radius: 10px;
+    z-index: 1100;
 }
 
 
-/* Для мобильных устройств */
-@media (max-width: 768px) {
-    .container {
-        max-width: 95%;
-        padding: 15px;
-    }
+.mobile-menu-button {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 998;
+    transition: transform 0.2s ease, background 0.3s ease;
 
+}
+
+
+.mobile-menu-button.active {
+    transform: rotate(90deg);
+
+}
+.mobile-menu-options {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1100;
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none; /* Отключаем клики, пока меню скрыто */
+
+}
+.mobile-menu-options.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto; /* Включаем клики */
+}
+
+.menu-option {
+    width: 150px;
+    padding: 10px;
+    background: black !important;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s, transform 0.1s;
+    font-family: Georgia, 'Times New Roman', Serif,serif;
+}
+.menu-option:active {
+    transform: scale(0.95);
+}
+
+.menu-option:hover {
+    background: black;
+}
+.sidebar-close{
+    display: none;
+}
+.sidebar-right-close{
+    display: none;
+}
+
+.two-column {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+. {
+    min-height: 100vh;
+}
+
+.column {
+    width: 48%;
+    text-align: justify;
+    padding: 10px;
+    overflow: hidden;
+    word-wrap: break-word; /* Разрешаем перенос слов */
+}
+.chapters-loader {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    font-size: 14px;
+    color: #666;
+}
+
+
+.cover-page {
+    text-align: center;
+    padding: 20px;
+}
+
+.cover-image {
+    max-width: 60%;
+    max-height: 70vh;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+#firstPage {
+    display: block !important;
+}
+.book-title {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.book-author {
+    font-size: 1.5em;
+    color: gray;
+}
+.two-page-mode .reader-container {
+    box-shadow: none !important;
+}
+body.two-page-mode .container, body.two-page-mode .reader-container { box-shadow: none !important; }
+/* Убираем фоновый цвет у body в двухстраничном режиме */
+body:has(.container.two-page-mode) {
+    background: #fff !important;
+}
+
+@media (max-width: 1024px) { /* Планшеты */
+    .container{
+        padding: 0;
+    }
+    .sidebar-toggle, #toggleSidebarRight {
+        display: none !important;
+    }
+    .mobile-menu-button {
+        display: block;
+    }
+    .mobile-menu-options {
+        display: flex;
+
+    }
     .navigation {
-        flex-direction: column;
-        align-items: center;
+        bottom: 20px;
+        padding: 6px 10px;
+        gap: 8px;
+        min-width: 100px;
     }
 
     .navigation a {
-        margin: 5px 0;
+        min-width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+
+    .navigation input {
+        width: 35px;
+        font-size: 14px;
+        padding: 3px;
+    }
+
+    .navigation span {
+        font-size: 14px;
+    }
+    .sidebar {
+        all: initial;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: -100%;
+        width: 100vw; /* Полная ширина экрана */
+        box-sizing: border-box;
+        height: auto;
+        background: rgb(245, 245, 245);
+        padding: 50px 16px 16px 16px;
+        transition: bottom 0.3s ease-in-out;
+        border-radius: 15px 15px 0 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+    .sidebar-right {
+        position: fixed;
+        left: 0; /* растягиваем на всю ширину экрана */
+        right: 0;
+        bottom: -100%; /* скрываем за нижней границей */
+        width: 100vw;
+        height: auto;
+
+        transition: bottom 0.3s ease-in-out;
+
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1101;
+    }
+    .sidebar-right.open {
+        bottom: 0;
+    }
+    .menu-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw; /* Растягиваем полоску на всю ширину */
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        text-transform: uppercase;
+
+        z-index: 1;
+    }
+    .sidebar.open {
+        bottom: 0;
+    }
+    .add-note-popup {
+        position: fixed;
+        width: 90vw; /* Занимает 90% ширины экрана */
+        max-width: 320px; /* Максимальная ширина */
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); /* Центрируем */
+        z-index: 2000;
+    }
+    .sidebar .sidebar-close {
+        background: black !important;
+        color: white !important;
+    }
+
+    /* Заголовок */
+    .sidebar h2 {
+        margin: 8px 40px;
+        text-align: center;
+        font-size: 17px;
+
+
+    }
+    .hide-on-mobile {
+        display: none;
+    }
+    /* Размер шрифта */
+    .font-size-control {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: rgba(120, 120, 128, 0.12);
+        padding: 4px;
+        border-radius: 20px;
+        width: fit-content;
+        margin-top: 12px;
+        margin-bottom: 12px;
+        margin-left: 3px;
+    }
+
+    .font-size-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 0; /* Убираем padding, который мог смещать иконки */
+        line-height: 1; /* Важно для вертикального центрирования */
+    }
+    .font-size-btn span,
+    .font-size-btn i,
+    .icon-btn i {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        line-height: 1;
+    }
+    .font-size-display {
+        min-width: 28px;
+        font-size: 17px;
+        font-weight: 500;
+        color: #000;
+        text-align: center;
+        font-family: -apple-system, system-ui;
+    }
+    #fullscreenBtn {
+        display: none !important;
+    }
+    #twoPageMode {
+        display: none !important;
+    }
+    /* Контрольные кнопки */
+    .icon-bar {
+        margin-bottom: calc(2vh + 8px);
+
+        display: flex;
+        gap: 8px;
+        height: auto;
+        position: relative; /* Добавляем relative позиционирование */
+    }
+
+    .icon-btn {
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .icon-btn i {
+        font-size: 14px;
+        color: #000 !important;
+        position: static; /* Убираем любое position если было */
+        margin: 0; /* Убираем margin если был */
+    }
+    .notes-icon-btn {
+        position: static; /* В мобильной версии убираем фиксированное позиционирование */
+
+    }
+    /* Сетка тем */
+    .theme-selector {
+        min-height: 0; /* Убираем минимальную высоту */
+        height: auto; /* Высота по контенту */
+        /* Остальные свойства оставляем */
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+    .theme-option {
+
+        width: 100%; /* Фиксированная ширина */
+        height: 100%; /* Фиксированная высота */
+        border-radius: 12px;
+        padding: 8px 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+    }
+
+
+
+
+
+    /* Mode секция */
+    .sidebar h3 {
+        margin: 6px 0 4px 0;
+        font-size: 18px;
+    }
+
+    /* Кнопка двухстраничного режима */
+    .mode-button {
+        width: 100%;
+        height: 36px;
+        background: white !important;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000;
+        font-size: 15px;
+        margin: 8px 0;
+    }
+.sidebar .library-back{
+    display: none;
+}
+    .sidebar #toggleTwoPageMode{
+        display: none;
+    }
+    /* Кнопка библиотеки */
+    .library-back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 16px;
+        width: 150px;
+        font-weight: normal !important;
+        padding: 10px;
+        background: #333;
+        color: white;
+        border-radius: 8px;
+        transition: background 0.3s, transform 0.1s;
+        margin: 0 !important;
+    }
+
+    /* Эффект при наведении */
+    .library-back:hover {
+        background: #555;
+    }
+
+    /* Эффект при нажатии */
+    .library-back:active {
+        transform: scale(0.95);
+    }
+
+    /* Индикатор свайпа */
+    .sidebar::before {
+        content: '';
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 2px;
+    }
+    .mode-container {
+        position: absolute;
+        top: 44px;
+        right: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    .sidebar-close {
+        position: absolute;
+        right: 15px;
+        width: 32px;
+        height: 32px;
+        background: black !important; /* Делаем кнопку черной */
+        color: white !important; /* Белый цвет иконки (если внутри SVG) */
+        border-radius: 10px;
+        display: flex;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        outline: none; /* Убираем стандартное выделение */
+        border: none; /* Если есть, убираем границу */
+    }
+    .sidebar-right-close {
+        position: absolute;
+        top: 20px;
+        right: 15px;
+        width: 32px;
+        height: 32px;
+        background: black !important; /* Делаем кнопку черной */
+        color: white !important; /* Белый цвет иконки (если внутри SVG) */
+        border-radius: 10px;
+        display: flex;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        outline: none; /* Убираем стандартное выделение */
+        border: none; /* Если есть, убираем границу */
+    }
+
+    .sidebar-close i{
+        font-size: 16px;
+        color:white;
+    }
+    .sidebar-close:hover {
+        background: rgba(0, 0, 0, 0.2);
+        outline: none; /* Убираем обводку при фокусировке */
+    }
+    .sidebar-right-close i{
+        font-size: 16px;
+        color:white;
+    }
+    .sidebar-right-close:hover {
+        background: rgba(0, 0, 0, 0.2);
+        outline: none; /* Убираем обводку при фокусировке */
+    }
+
+    #twoPageMode {
+        border-radius: 50%;
+        background: rgba(120, 120, 128, 0.16);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #searchInput {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        width: calc(100% - 20px);
+        height: 40px;
+        padding: 5px 10px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        display: none;
+        background: white;
+        z-index: 2000;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    /* Активное состояние */
+    #searchInput.show {
+        display: block;
+        transform: translateY(0);
+        opacity: 1;
     }
 }
+
+@media (max-width: 768px) {
+    .container {
+        max-width: 100%;
+
+    }
+    .reader-container {
+        padding: 20px;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+
+
+    .navigation {
+        bottom: 15px;
+        padding: 5px 8px;
+        gap: 6px;
+        min-width: 90px;
+    }
+
+    .navigation a {
+        min-width: 25px;
+        height: 25px;
+        font-size: 13px;
+    }
+
+    .navigation input {
+        width: 30px;
+        font-size: 13px;
+        padding: 2px;
+    }
+
+    .navigation span {
+        font-size: 13px;
+    }
+    .theme-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+        gap: 5px; /* Уменьшаем расстояние между кнопками */
+        padding: 5px; /* Убираем лишний внутренний отступ */
+        width: 100%;
+        max-width: 300px; /* Ограничиваем ширину */
+        margin: auto; /* Центрируем */
+    }
+
+    /* Оптимизация самих кнопок */
+    .theme-option {
+        width: 85px;
+        height: 50px;
+        font-size: 13px;
+        text-align: center;
+        padding: 5px;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    /* Эффект нажатия */
+    .theme-option:active {
+        transform: scale(0.95);
+    }
+
+    /* Выделение активной темы */
+    .theme-option.active {
+        border: 2px solid #000;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media (max-width: 480px) { /* Телефоны */
+    .navigation {
+        bottom: 10px;
+        padding: 4px 6px;
+        gap: 4px;
+        min-width: 80px;
+        border-radius: 8px;
+    }
+
+    .navigation a {
+        min-width: 22px;
+        height: 22px;
+        font-size: 12px;
+    }
+
+    .navigation input {
+        width: 28px;
+        font-size: 12px;
+        padding: 1px;
+    }
+
+    .navigation span {
+        font-size: 12px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -35,7 +35,7 @@ public class User {
         this.roles = roles;
     }
 
-    // Геттеры и сеттеры
+
     public Long getId() {
         return id;
     }
@@ -71,7 +71,7 @@ public class User {
     public void setRoles(Set<String> roles) {
         this.roles = roles;
     }
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST}, orphanRemoval = false)
     private List<Ebook> ebooks = new ArrayList<>();
 
 }
