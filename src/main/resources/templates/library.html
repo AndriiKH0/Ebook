@@ -15,9 +15,9 @@
         <div class="nav-item">
             <form method="get" action="/library">
                 <select name="sortBy" onchange="this.form.submit()" class="nav-btn">
-                    <option value="title" th:selected="${currentSort == 'title'}">Sortuj alfabetycznie</option>
-                    <option value="date" th:selected="${currentSort == 'date'}">Sortuj według daty</option>
-                    <option value="author" th:selected="${currentSort == 'author'}">Sortuj według autora</option>
+                    <option value="title" th:selected="${currentSort == 'title'}">Sort alphabetically</option>
+                    <option value="date" th:selected="${currentSort == 'date'}">Sort by date</option>
+                    <option value="author" th:selected="${currentSort == 'author'}">Sort by author</option>
                 </select>
             </form>
         </div>
