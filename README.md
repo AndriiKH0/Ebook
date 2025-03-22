@@ -2,8 +2,11 @@
 Wymagania wstępne
 
 Zainstalowana Java - Wymagany jest Java Development Kit (JDK) w wersji 17 lub nowszej
+
 Zainstalowany MySQL Server - Aplikacja używa MySQL jako bazy danych
+
 Środowisko programistyczne (IDE) - IntelliJ IDEA, Eclipse lub inne IDE dla Javy
+
 
 Instrukcja uruchomienia aplikacji FbReaderWeb
 
