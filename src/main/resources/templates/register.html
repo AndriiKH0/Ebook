@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Register</title>
   <link rel="stylesheet" th:href="@{/css/login.css}">
@@ -8,17 +8,119 @@
 <body>
 <div class="container">
   <h1>Register</h1>
-  <form action="/register" method="post">
+
+  <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+  <form id="registerForm" action="/register" method="post">
     <div class="input-group">
       <label for="username">Username:</label>
       <input type="text" id="username" name="username" required>
+      <div class="requirements">
+        <ul>
+          <li id="usernameLength" class="invalid">At least 5 characters</li>
+          <li id="usernameFormat" class="invalid">Only letters, numbers, and underscore</li>
+        </ul>
+      </div>
     </div>
+
     <div class="input-group">
       <label for="password">Password:</label>
       <input type="password" id="password" name="password" required>
+      <div class="requirements">
+        <ul>
+          <li id="passwordLength" class="invalid">At least 8 characters</li>
+          <li id="passwordLetters" class="invalid">Contains at least one letter</li>
+          <li id="passwordDigits" class="invalid">Contains at least one digit</li>
+        </ul>
+      </div>
     </div>
-    <button type="submit">Register</button>
+
+    <div class="input-group">
+      <label for="confirmPassword">Confirm Password:</label>
+      <input type="password" id="confirmPassword" name="confirmPassword" required>
+      <div class="requirements">
+        <p id="passwordMatch" class="password-match invalid">Passwords must match</p>
+      </div>
+    </div>
+
+    <button type="submit" id="submitBtn" disabled>Register</button>
   </form>
+
+  <div class="login-link">
+    <a href="/login" style="color: #bf26ea;">Already have an account? Log in</a>
+  </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const submitBtn = document.getElementById('submitBtn');
+
+
+    const usernameLength = document.getElementById('usernameLength');
+    const usernameFormat = document.getElementById('usernameFormat');
+
+
+    const passwordLength = document.getElementById('passwordLength');
+    const passwordLetters = document.getElementById('passwordLetters');
+    const passwordDigits = document.getElementById('passwordDigits');
+    const passwordMatch = document.getElementById('passwordMatch');
+
+    function validateForm() {
+
+      const usernameValue = username.value;
+      const usernameLengthValid = usernameValue.length >= 5;
+      const usernameFormatValid = /^[a-zA-Z0-9_]+$/.test(usernameValue);
+
+
+      const passwordValue = password.value;
+      const passwordLengthValid = passwordValue.length >= 8;
+      const passwordLettersValid = /[a-zA-Z]/.test(passwordValue);
+      const passwordDigitsValid = /\d/.test(passwordValue);
+      const passwordsMatch = passwordValue === confirmPassword.value && passwordValue.length > 0;
+
+
+      usernameLength.className = usernameLengthValid ? 'valid' : (usernameValue.length > 0 ? 'error' : 'invalid');
+      usernameFormat.className = usernameFormatValid ? 'valid' : (usernameValue.length > 0 ? 'error' : 'invalid');
+
+      passwordLength.className = passwordLengthValid ? 'valid' : (passwordValue.length > 0 ? 'error' : 'invalid');
+      passwordLetters.className = passwordLettersValid ? 'valid' : (passwordValue.length > 0 ? 'error' : 'invalid');
+      passwordDigits.className = passwordDigitsValid ? 'valid' : (passwordValue.length > 0 ? 'error' : 'invalid');
+
+
+      if (confirmPassword.value.length > 0) {
+        passwordMatch.className = 'password-match ' + (passwordsMatch ? 'valid' : 'error');
+      } else {
+        passwordMatch.className = 'password-match invalid';
+      }
+
+
+      const formValid = usernameLengthValid && usernameFormatValid &&
+              passwordLengthValid && passwordLettersValid &&
+              passwordDigitsValid && passwordsMatch;
+
+      submitBtn.disabled = !formValid;
+    }
+
+
+    username.addEventListener('input', validateForm);
+    password.addEventListener('input', validateForm);
+    confirmPassword.addEventListener('input', validateForm);
+
+
+    validateForm();
+
+    form.addEventListener('submit', function(e) {
+      validateForm();
+      if (submitBtn.disabled) {
+        e.preventDefault();
+        alert('Please correct all form errors before submitting.');
+      }
+    });
+  });
+</script>
 </body>
 </html>

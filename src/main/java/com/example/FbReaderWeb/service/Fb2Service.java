@@ -2,7 +2,6 @@ package com.example.FbReaderWeb.service;
 import com.example.FbReaderWeb.model.User;
 import com.example.FbReaderWeb.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.example.FbReaderWeb.model.Ebook;
 import com.example.FbReaderWeb.repository.EbookRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +41,6 @@ public class Fb2Service {
         extractAndSaveImages(content, outputDir, bookId);
     }
 
-
     public List<Ebook> searchByTitle(String query) {
         return ebookRepository.findByTitleContainingIgnoreCase(query);
     }
@@ -54,8 +52,6 @@ public class Fb2Service {
     public List<Ebook> searchByGenre(String genre, String username) {
         return ebookRepository.findByUserAndGenreContainingIgnoreCase(username, genre);
     }
-
-
 
     public String processFb2File(MultipartFile file, String username) throws IOException {
 
@@ -77,7 +73,7 @@ public class Fb2Service {
 
 
         String title = extractTagContent(content, "<book-title>", "</book-title>");
-        title = title != null ? stripTags(title) : "Неизвестное название";
+        title = title != null ? stripTags(title) : "Unknown title";
 
         String author = extractAuthor(content);
 
@@ -113,18 +109,17 @@ public class Fb2Service {
         extractAndSaveImages(content, outputDir, bookId);
 
         String title = extractTagContent(content, "<book-title>", "</book-title>");
-        title = (title != null) ? title.trim() : "Без названия";
+        title = (title != null) ? title.trim() : "No name";
 
         String authorTag = extractTagContent(content, "<author>", "</author>");
         String firstName = (authorTag != null) ? extractTagContent(authorTag, "<first-name>", "</first-name>") : "";
         String lastName = (authorTag != null) ? extractTagContent(authorTag, "<last-name>", "</last-name>") : "";
         String author = ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim();
         if (author.isEmpty()) {
-            author = "Неизвестный автор";
+            author = "Unknown author";
         }
 
         StringBuilder result = new StringBuilder();
-
 
         result.append("<div class='cover-page'>")
                 .append("<img src='/images/").append(bookId).append("_cover.jpg' alt='Обложка' class='cover-image'>")
@@ -132,14 +127,23 @@ public class Fb2Service {
                 .append("<h2 class='book-author'>").append(author).append("</h2>")
                 .append("</div>");
 
-
         String body = extractTagContent(content, "<body>", "</body>");
         if (body != null) {
             body = body.replaceAll("(?i)<title>\\s*<p>(.*?)</p>\\s*</title>", "<h3 style=\"text-align: center;\">$1</h3>");
+
+
             body = body.replaceAll("<image\\s+xlink:href=\"#(.*?)\"\\s*/?>",
                     "<img src=\"/images/" + bookId + "_$1.jpg\" style=\"max-width: 100%; height: auto;\">");
-            body = body.replaceAll("__+", "_");
 
+
+            body = body.replaceAll("<image\\s+l:href=\"#(.*?)\"\\s*/>",
+                    "<img src=\"/images/" + bookId + "_$1.jpg\" style=\"max-width: 100%; height: auto;\">");
+
+
+            body = body.replaceAll("<image\\s+l:href=\"#(.*?)\"\\s*>",
+                    "<img src=\"/images/" + bookId + "_$1.jpg\" style=\"max-width: 100%; height: auto;\">");
+
+            body = body.replaceAll("__+", "_");
 
             result.append("<div class='page' id='firstPage'>").append(body).append("</div>");
         }
@@ -195,13 +199,6 @@ public class Fb2Service {
         }
         return null;
     }
-
-
-
-
-
-
-
 
 
     private String flattenTextWithTags(String content) {
@@ -265,7 +262,6 @@ public class Fb2Service {
     }
 
 
-
     private String stripTags(String input) {
         return input.replaceAll("<[^>]+>", "").trim();
     }
@@ -278,11 +274,14 @@ public class Fb2Service {
         if (coverTag == null) return;
 
         while (matcher.find()) {
-            String imageId = matcher.group(1).replaceAll("__+", "_");
+            String imageId = matcher.group(1);
             String base64Data = matcher.group(2).replaceAll("\\s+", "");
 
 
-            if (coverTag.contains("xlink:href=\"#" + imageId + "\"")) {
+            if (coverTag.contains("xlink:href=\"#" + imageId + "\"") ||
+                    coverTag.contains("l:href=\"#" + imageId + "\"") ||
+                    coverTag.contains("l:href=\"#cover.jpg\"")) {
+
                 String outputPath = outputDir + bookId + "_cover.jpg";
                 saveImage(base64Data, outputPath);
                 break;
@@ -293,36 +292,75 @@ public class Fb2Service {
 
 
     private void extractAndSaveImages(String content, String outputDir, String bookId) {
+
         Pattern pattern = Pattern.compile("<binary[^>]+id=\"(.*?)\"[^>]*>(.*?)</binary>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(content);
 
+
         String coverTag = extractTagContent(content, "<coverpage>", "</coverpage>");
 
+
+        Set<String> imageIdsInContent = new HashSet<>();
+
+
+        Pattern imagePattern = Pattern.compile("<image\\s+l:href=\"#([^\"]+)\"\\s*/?>");
+        Matcher imageMatcher = imagePattern.matcher(content);
+
+
+        while (imageMatcher.find()) {
+            String imageId = imageMatcher.group(1);
+            imageIdsInContent.add(imageId);
+            System.out.println("Found image ID in text: " + imageId);
+        }
+
         while (matcher.find()) {
-            String imageId = matcher.group(1).replaceAll("__+", "_"); // Исправляем "__" → "_"
-            String base64Data = matcher.group(2).replaceAll("\\s+", ""); // Убираем пробелы
+            String imageId = matcher.group(1);
+            String base64Data = matcher.group(2).replaceAll("\\s+", "");
+
+            boolean isCoverImage = false;
+            if (coverTag != null) {
+                isCoverImage = (coverTag.contains("l:href=\"#" + imageId + "\"") ||
+                        coverTag.contains("xlink:href=\"#" + imageId + "\"") ||
+                        (imageId.equals("cover.jpg") && coverTag.contains("l:href=\"#cover.jpg\"")));
+            }
+
+            if (isCoverImage) {
+
+                System.out.println("Skip the cover: " + imageId);
+                continue;
+            }
+
+            boolean shouldSave = false;
+            String matchedId = null;
 
 
-            if (coverTag == null || !coverTag.contains("xlink:href=\"#" + imageId + "\"")) {
-                String uniqueImageName = bookId + "_" + imageId + ".jpg";
-                saveImage(base64Data, outputDir + uniqueImageName);
+            if (imageIdsInContent.contains(imageId)) {
+                shouldSave = true;
+                matchedId = imageId;
+            }
+
+            if (!shouldSave) {
+                for (String contentId : imageIdsInContent) {
+                    if (contentId.contains(imageId) || imageId.contains(contentId)) {
+                        shouldSave = true;
+                        matchedId = contentId;
+                        break;
+                    }
+                }
+            }
+
+            if (shouldSave) {
+
+                String idToUse = matchedId != null ? matchedId : imageId;
+                String uniqueImageName = bookId + "_" + idToUse + ".jpg";
+                String outputPath = outputDir + uniqueImageName;
+                System.out.println("Save the image: " + outputPath);
+                saveImage(base64Data, outputPath);
+            } else {
+                System.out.println("Skipping image (not found in content): " + imageId);
             }
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private void saveImage(String base64Data, String outputPath) {
@@ -331,28 +369,24 @@ public class Fb2Service {
             BufferedImage img = ImageIO.read(new ByteArrayInputStream(decodedBytes));
 
             if (img != null) {
-                File outputFile = new File(outputPath);
 
-
-                if (outputFile.getName().endsWith(".jpg.jpg")) {
-                    outputPath = outputPath.replace(".jpg.jpg", ".jpg");
-                    outputFile = new File(outputPath);
+                if (!outputPath.toLowerCase().endsWith(".jpg")) {
+                    outputPath += ".jpg";
                 }
+
+                File outputFile = new File(outputPath);
 
                 outputFile.getParentFile().mkdirs();
 
                 ImageIO.write(img, "jpg", outputFile);
-                System.out.println("✅ Изображение сохранено без двойного расширения: " + outputPath);
+                System.out.println("Image saved: " + outputPath);
             } else {
-                System.err.println("❌ Ошибка: не удалось декодировать изображение.");
+                System.err.println("Error: Failed to decode image.");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
-
 
     private BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
         Image resultingImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
@@ -386,11 +420,6 @@ public class Fb2Service {
     }
 
     public List<String> paginateContent(String content, int targetWordCount, boolean twoPageMode) {
-        // Удаляем обложку из контента
-        content = content.replaceAll("(?s)<div class='cover-page'>.*?</div>\\s*", "")
-                .replaceAll("(?s)<div class='page' id='firstPage'>(.*?)</div>", "$1")
-                .replaceAll("\\s+", " ")
-                .trim();
 
         String[] words = content.split("\\s+");
         List<String> pages = new ArrayList<>();
@@ -399,44 +428,30 @@ public class Fb2Service {
         int totalWordsProcessed = 0;
 
         while (currentIndex < words.length) {
-            // Определяем конец страницы
+
             int pageEnd = Math.min(currentIndex + targetWordCount, words.length);
 
-            // Корректировка до конца предложения
             while (pageEnd < words.length &&
                     !isSentenceBoundary(words[pageEnd - 1]) &&
                     pageEnd - currentIndex < targetWordCount + 20) {
                 pageEnd++;
             }
 
-            // Создаем контент страницы
             String pageContent = String.join(" ",
                     Arrays.copyOfRange(words, currentIndex, pageEnd)
             );
 
             pages.add(pageContent);
 
-            // Подсчет слов
-            int pageWordsCount = pageContent.split("\\s+").length;
 
-            // Логирование
-            System.err.println("Страница " + (pages.size()) + " (одностраничный режим):");
-            System.err.println("  Количество слов: " + pageWordsCount + " слов");
-            System.err.println("  Диапазон слов: " + currentIndex + "-" + pageEnd);
-            System.err.flush();
+            int pageWordsCount = pageContent.split("\\s+").length;
 
             totalWordsProcessed += pageWordsCount;
 
-            // Обновляем индекс для следующей страницы
+
             currentIndex = pageEnd;
         }
 
-        // Финальная статистика
-        System.err.println("\n=== ИТОГО ===");
-        System.err.println("Всего слов в тексте: " + words.length);
-        System.err.println("Обработано слов: " + totalWordsProcessed);
-        System.err.println("Количество страниц: " + pages.size());
-        System.err.flush();
 
         return pages;
     }
@@ -449,7 +464,6 @@ public class Fb2Service {
         return c == '.' || c == '!' || c == '?' || c == '\n';
     }
     public List<String> paginateTwoPageMode(String content, int wordsPerScreen) {
-        // Удаляем обложку из контента
         content = content.replaceAll("(?s)<div class='cover-page'>.*?</div>\\s*", "")
                 .replaceAll("(?s)<div class='page' id='firstPage'>(.*?)</div>", "$1")
                 .replaceAll("\\s+", " ")
@@ -462,43 +476,50 @@ public class Fb2Service {
         int totalWordsProcessed = 0;
 
         while (currentIndex < words.length) {
-            // Точное количество слов для страницы
             int totalPageWords = wordsPerScreen;
-
-            // Разделение слов между левой и правой колонками
             int leftColumnWords = totalPageWords / 2;
             int rightColumnWords = totalPageWords - leftColumnWords;
 
-            // Индексы для левой колонки
+
+            List<Integer> leftImageIndexes = findImageIndexes(words, currentIndex, currentIndex + leftColumnWords);
+            List<Integer> rightImageIndexes = findImageIndexes(words, currentIndex + leftColumnWords, currentIndex + totalPageWords);
+
+
+            if (leftImageIndexes.size() > 1) {
+                leftColumnWords = leftImageIndexes.get(0);
+            }
+            if (rightImageIndexes.size() > 1) {
+                rightColumnWords = rightImageIndexes.get(0);
+            }
+
             int leftColumnEnd = Math.min(currentIndex + leftColumnWords, words.length);
 
-            // Корректировка до конца предложения для левой колонки
+
             while (leftColumnEnd < words.length &&
                     !isSentenceBoundary(words[leftColumnEnd - 1]) &&
                     leftColumnEnd - currentIndex < leftColumnWords + 10) {
                 leftColumnEnd++;
             }
 
-            // Индексы для правой колонки
             int rightColumnStart = leftColumnEnd;
             int rightColumnEnd = Math.min(rightColumnStart + rightColumnWords, words.length);
 
-            // Корректировка до конца предложения для правой колонки
+
             while (rightColumnEnd < words.length &&
-                    (!isSentenceBoundary(words[rightColumnEnd - 1]) ||
-                            isChapterHeaderSplit(words, currentIndex, rightColumnEnd)) &&
+                    !isSentenceBoundary(words[rightColumnEnd - 1]) &&
                     rightColumnEnd - rightColumnStart < rightColumnWords + 10) {
                 rightColumnEnd++;
             }
 
-            // Создаем HTML для двухколоночной страницы
+
             String leftColumn = String.join(" ",
                     Arrays.copyOfRange(words, currentIndex, leftColumnEnd)
             );
             String rightColumn = String.join(" ",
                     Arrays.copyOfRange(words, rightColumnStart, rightColumnEnd)
             );
-
+            leftColumn = removeExtraImages(leftColumn);
+            rightColumn = removeExtraImages(rightColumn);
             String pageHtml = "<div class='two-column'>" +
                     "<div class='column left'><p>" + leftColumn + "</p></div>" +
                     "<div class='column right'><p>" + rightColumn + "</p></div>" +
@@ -506,50 +527,81 @@ public class Fb2Service {
 
             pages.add(pageHtml);
 
-            // Подсчет слов
+
             int leftColumnWordsCount = leftColumn.split("\\s+").length;
             int rightColumnWordsCount = rightColumn.split("\\s+").length;
             int pageWordsCount = leftColumnWordsCount + rightColumnWordsCount;
 
-            // Логирование
-            System.err.println("Страница " + (pages.size()) + " (двухстраничный режим):");
-            System.err.println("  Левая колонка: " + leftColumnWordsCount + " слов");
-            System.err.println("  Правая колонка: " + rightColumnWordsCount + " слов");
-            System.err.println("  Всего на странице: " + pageWordsCount + " слов");
-            System.err.println("  Диапазон слов: " + currentIndex + "-" + rightColumnEnd);
-            System.err.flush();
 
             totalWordsProcessed += pageWordsCount;
 
-            // Обновляем индекс для следующей страницы
+
             currentIndex = rightColumnEnd;
         }
 
-        // Финальная статистика
-        System.err.println("\n=== ИТОГО ===");
-        System.err.println("Всего слов в тексте: " + words.length);
-        System.err.println("Обработано слов: " + totalWordsProcessed);
-        System.err.println("Количество страниц: " + pages.size());
-        System.err.flush();
 
         return pages;
     }
-    private boolean isChapterHeaderSplit(String[] words, int currentIndex, int pageEnd) {
-        // Проверяем каждое слово в диапазоне
-        for (int i = currentIndex; i < pageEnd; i++) {
-            // Проверяем наличие HTML-тега заголовка главы
-            if (containsChapterHeader(words[i])) {
-                return true;
+    private String removeExtraImages(String html) {
+        Pattern imgPattern = Pattern.compile("(<img\\s+[^>]*>)");
+        Matcher matcher = imgPattern.matcher(html);
+        StringBuffer sb = new StringBuffer();
+        boolean firstFound = false;
+        while (matcher.find()) {
+            if (!firstFound) {
+                firstFound = true;
+                matcher.appendReplacement(sb, matcher.group(1));
+            } else {
+                matcher.appendReplacement(sb, "");
             }
         }
-        return false;
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
-    private boolean containsChapterHeader(String word) {
-        // Проверка на наличие тега h3 и текста "Глава"
-        return word.contains("<h3") &&
-                (word.contains("Глава") || word.matches(".*Глава\\s+\\d+.*"));
+    private List<Integer> findImageIndexes(String[] words, int start, int end) {
+        List<Integer> imageIndexes = new ArrayList<>();
+        for (int i = start; i < end && i < words.length; i++) {
+            if (words[i].contains("<img")) {
+                imageIndexes.add(i - start);
+            }
+        }
+        return imageIndexes;
     }
+
+
+    private boolean isBlockIntact(String[] words, int start, int end) {
+        String[] blockTags = {"<img", "<section", "</section>", "<h3", "<empty-line>"};
+
+        for (String tag : blockTags) {
+            boolean startContains = false;
+            boolean endContains = false;
+
+            for (int i = start; i < end; i++) {
+                if (words[i].contains(tag)) {
+                    startContains = true;
+                    break;
+                }
+            }
+
+            for (int i = end; i < words.length; i++) {
+                if (words[i].contains(tag)) {
+                    endContains = true;
+                    break;
+                }
+            }
+
+            if (startContains && !endContains) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+
+
     private boolean isSentenceBoundary(String word) {
         return word.endsWith(".") ||
                 word.endsWith("!") ||
@@ -560,24 +612,26 @@ public class Fb2Service {
     }
 
 
+
+
     public int findPageByTextFragment(String content, String fragment, int wordsPerScreen, boolean twoPageMode) {
-        // Очищаем HTML-теги из фрагмента
+
         String cleanFragment = fragment.replaceAll("<[^>]+>", " ")
                 .replaceAll("\\s+", " ")
                 .trim()
                 .toLowerCase();
 
-        // Если фрагмент слишком короткий, возвращаем -1
+
         if (cleanFragment.length() < 30) {
             return -1;
         }
 
-        // Получаем все страницы с применением текущей пагинации
+
         List<String> pages = twoPageMode
                 ? paginateTwoPageMode(content, wordsPerScreen)
                 : paginateContent(content, wordsPerScreen, twoPageMode);
 
-        // Ищем фрагмент на каждой странице
+
         for (int i = 0; i < pages.size(); i++) {
             String pageContent = pages.get(i)
                     .replaceAll("<[^>]+>", " ")
@@ -586,12 +640,11 @@ public class Fb2Service {
                     .toLowerCase();
 
             if (pageContent.contains(cleanFragment)) {
-                return twoPageMode && i == 0 ? 0 : i + 1;// +1 так как страницы начинаются с 1 (или с 0 для обложки в двухстраничном режиме)
+                return twoPageMode && i == 0 ? 0 : i + 1;
             }
         }
 
-        // Если точное совпадение не найдено, ищем частичное совпадение
-        // Берем первые 50-100 символов из фрагмента для поиска
+
         if (cleanFragment.length() > 50) {
             String shorterFragment = cleanFragment.substring(0, Math.min(100, cleanFragment.length()));
 
@@ -608,43 +661,37 @@ public class Fb2Service {
             }
         }
 
-        // Если и частичное совпадение не найдено, возвращаем -1
+
         return -1;
     }
 
-    /**
-     * Определяет относительную позицию (от 0 до 1) текста в книге
-     *
-     * @param content полное содержимое книги
-     * @param fragment фрагмент текста
-     * @return относительная позиция от 0 до 1, или -1 если не найдено
-     */
+
     public int findPageByTextFragmentInRange(String content, String fragment, int wordsPerScreen,
                                              boolean twoPageMode, int targetPage, int range) {
-        // Основная логика как в findPageByTextFragment
+
         int exactPage = findPageByTextFragment(content, fragment, wordsPerScreen, twoPageMode);
         if (exactPage != -1) {
             return exactPage;
         }
 
-        // Если точное совпадение не найдено, проверяем соседние страницы в пределах указанного диапазона
+
         List<String> pages = twoPageMode
                 ? paginateTwoPageMode(content, wordsPerScreen)
                 : paginateContent(content, wordsPerScreen, twoPageMode);
 
-        // Определяем диапазон страниц для поиска
+
         int startPage = Math.max(0, targetPage - range);
         int endPage = Math.min(pages.size() - 1, targetPage + range);
 
-        // Очищаем HTML-теги из фрагмента
+
         String cleanFragment = fragment.replaceAll("<[^>]+>", " ")
                 .replaceAll("\\s+", " ")
                 .trim()
                 .toLowerCase();
 
-        // Ищем на соседних страницах
+
         for (int i = startPage; i <= endPage; i++) {
-            if (i == targetPage) continue; // Пропускаем целевую страницу, она уже проверена
+            if (i == targetPage) continue;
 
             String pageContent = pages.get(i)
                     .replaceAll("<[^>]+>", " ")
@@ -657,199 +704,8 @@ public class Fb2Service {
             }
         }
 
-        return -1; // Не нашли ни на целевой странице, ни на соседних
+        return -1;
     }
-    public double getRelativePosition(String content, String fragment) {
-        // Очищаем текст от HTML
-        String cleanContent = content.replaceAll("<[^>]+>", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
-
-        String cleanFragment = fragment.replaceAll("<[^>]+>", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
-
-        // Ищем позицию фрагмента
-        int position = cleanContent.indexOf(cleanFragment);
-        if (position == -1) {
-            return -1;
-        }
-
-        // Вычисляем относительную позицию
-        return (double) position / cleanContent.length();
-    }
-
-    /**
-     * Находит абсолютную позицию (индекс) фрагмента текста в книге
-     *
-     * @param content полное содержимое книги
-     * @param fragment фрагмент текста
-     * @return позиция начала фрагмента или -1, если не найден
-     */
-    public int getAbsolutePosition(String content, String fragment) {
-        // Очищаем текст от HTML
-        String cleanContent = content.replaceAll("<[^>]+>", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
-
-        String cleanFragment = fragment.replaceAll("<[^>]+>", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
-
-        // Возвращаем индекс начала фрагмента
-        return cleanContent.indexOf(cleanFragment);
-    }
-
-    /**
-     * Извлекает контекст вокруг фрагмента текста
-     *
-     * @param content полное содержимое книги
-     * @param fragment фрагмент текста
-     * @param contextLength длина контекста до и после фрагмента (в символах)
-     * @return объект с контекстом до и после фрагмента
-     */
-    public Map<String, String> extractTextContext(String content, String fragment, int contextLength) {
-        Map<String, String> result = new HashMap<>();
-
-        // Очищаем текст от HTML
-        String cleanContent = content.replaceAll("<[^>]+>", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
-
-        String cleanFragment = fragment.replaceAll("<[^>]+>", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
-
-        // Находим позицию фрагмента
-        int position = cleanContent.indexOf(cleanFragment);
-        if (position == -1) {
-            result.put("before", "");
-            result.put("after", "");
-            return result;
-        }
-
-        // Извлекаем контекст до фрагмента
-        int beforeStart = Math.max(0, position - contextLength);
-        String before = cleanContent.substring(beforeStart, position);
-
-        // Извлекаем контекст после фрагмента
-        int afterEnd = Math.min(cleanContent.length(), position + cleanFragment.length() + contextLength);
-        String after = cleanContent.substring(position + cleanFragment.length(), afterEnd);
-
-        result.put("before", before);
-        result.put("after", after);
-
-        return result;
-    }
-
-    /**
-     * Конвертирует абсолютную позицию в номер страницы
-     *
-     * @param content полное содержимое книги
-     * @param position абсолютная позиция в тексте
-     * @param wordsPerScreen количество слов на странице
-     * @param twoPageMode режим отображения (одна/две страницы)
-     * @return номер страницы, соответствующий позиции
-     */
-    public int getPageByPosition(String content, int position, int wordsPerScreen, boolean twoPageMode) {
-        if (position < 0) {
-            return twoPageMode ? 0 : 1; // По умолчанию первая страница
-        }
-
-        // Очищаем текст от HTML
-        String cleanContent = content.replaceAll("<[^>]+>", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
-
-        // Если позиция за пределами контента, возвращаем последнюю страницу
-        if (position >= cleanContent.length()) {
-            List<String> pages = twoPageMode
-                    ? paginateTwoPageMode(content, wordsPerScreen)
-                    : paginateContent(content, wordsPerScreen, twoPageMode);
-            return pages.size();
-        }
-
-        // Получаем относительную позицию
-        double relativePos = (double) position / cleanContent.length();
-
-        // Получаем общее количество страниц
-        List<String> pages = twoPageMode
-                ? paginateTwoPageMode(content, wordsPerScreen)
-                : paginateContent(content, wordsPerScreen, twoPageMode);
-
-        // Вычисляем номер страницы по относительной позиции
-        int page = (int) Math.ceil(relativePos * pages.size());
-
-        // Корректируем страницу для разных режимов
-        if (twoPageMode) {
-            return Math.max(0, page);
-        } else {
-            return Math.max(1, page);
-        }
-    }
-
-    /**
-     * Ищет заметку с наилучшим совпадением на всех страницах книги
-     *
-     * @param content полное содержимое книги
-     * @param noteText текст заметки
-     * @param wordsPerScreen количество слов на странице
-     * @param twoPageMode режим отображения (одна/две страницы)
-     * @return наилучшая найденная страница или -1, если совпадений нет
-     */
-    public int findBestMatchingPage(String content, String noteText, int wordsPerScreen, boolean twoPageMode) {
-        // Сначала проверяем точное совпадение
-        int exactPage = findPageByTextFragment(content, noteText, wordsPerScreen, twoPageMode);
-        if (exactPage != -1) {
-            return exactPage;
-        }
-
-        // Если точное совпадение не найдено, пробуем найти наилучшее частичное совпадение
-        String cleanNote = noteText.replaceAll("<[^>]+>", " ")
-                .replaceAll("\\s+", " ")
-                .trim()
-                .toLowerCase();
-
-        // Разбиваем заметку на фразы
-        String[] phrases = cleanNote.split("[.!?]");
-
-        // Ищем наиболее уникальные фразы (длиннее 10 символов)
-        List<String> searchPhrases = new ArrayList<>();
-        for (String phrase : phrases) {
-            phrase = phrase.trim();
-            if (phrase.length() > 10) {
-                searchPhrases.add(phrase);
-            }
-        }
-
-        // Если нет подходящих фраз, берем начало заметки
-        if (searchPhrases.isEmpty() && cleanNote.length() > 15) {
-            searchPhrases.add(cleanNote.substring(0, Math.min(50, cleanNote.length())));
-        }
-
-        // Ищем каждую фразу и выбираем наиболее часто встречающуюся страницу
-        Map<Integer, Integer> pageOccurrences = new HashMap<>();
-        int bestPage = -1;
-        int maxOccurrences = 0;
-
-        for (String phrase : searchPhrases) {
-            int page = findPageByTextFragment(content, phrase, wordsPerScreen, twoPageMode);
-            if (page != -1) {
-                int count = pageOccurrences.getOrDefault(page, 0) + 1;
-                pageOccurrences.put(page, count);
-
-                if (count > maxOccurrences) {
-                    maxOccurrences = count;
-                    bestPage = page;
-                }
-            }
-        }
-
-        return bestPage;
-    }
-
-
-
 
 
     public int countWords(String text) {

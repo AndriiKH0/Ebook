@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 
 @SpringBootApplication(scanBasePackages = "com.example.FbReaderWeb")
-@EnableAsync // Включаем поддержку асинхронности
+@EnableAsync
 public class FbReaderWebApplication {
 
 	public static void main(String[] args) {

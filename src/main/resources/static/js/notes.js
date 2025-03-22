@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Элементы UI
+
     const notesIcon = document.getElementById("notesIcon");
     const notesPanel = document.getElementById("notesPanel");
     const clearNotes = document.getElementById("clearNotes");
@@ -14,21 +14,118 @@ document.addEventListener("DOMContentLoaded", function () {
     const colorPreview = document.getElementById("colorPreview");
     const bookId = window.location.pathname.split("/")[2];
 
-    // Константы
-    const MIN_NOTE_TEXT_LENGTH = 30; // Минимальная длина текста заметки для уникальной идентификации
 
-    // Переменные состояния
+    const MIN_NOTE_TEXT_LENGTH = 30;
+
+
     let selectedText = "";
     let selectionRange = null;
     let notesCache = [];
 
-    // Проверка наличия необходимых элементов
+
     if (!notesIcon || !notesPanel || !notesList) {
-        console.error("Ошибка: один из элементов заметок не найден.");
+        console.error("Error: One of the note elements was not found.");
         return;
     }
+    if (window.innerWidth <= 1024) {
+        const closeBtn = document.createElement("button");
+        closeBtn.id = "notesCloseBtn";
+        closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        closeBtn.addEventListener("click", function() {
+            notesPanel.classList.remove("mobile-open");
+        });
+        notesPanel.appendChild(closeBtn);
+    }
 
-    // Вспомогательные функции
+
+    notesIcon.addEventListener("click", function () {
+        if (window.innerWidth <= 1024) {
+
+            notesPanel.style.display = "flex";
+            notesPanel.classList.add("mobile-open");
+
+
+            const sidebar = document.getElementById('sidebar');
+            const sidebarRight = document.getElementById('sidebarRight');
+
+            if (sidebar) sidebar.classList.remove('open');
+            if (sidebarRight) sidebarRight.classList.remove('open');
+
+
+            const mobileMenuOptions = document.getElementById('mobileMenuOptions');
+            const mobileMenuButton = document.getElementById('mobileMenuButton');
+
+            if (mobileMenuOptions && mobileMenuOptions.classList.contains('show')) {
+                mobileMenuOptions.classList.remove('show');
+                if (mobileMenuButton) mobileMenuButton.classList.remove('active');
+            }
+        } else {
+
+            notesPanel.style.display = notesPanel.style.display === "flex" ? "none" : "flex";
+
+
+            const rect = notesIcon.getBoundingClientRect();
+            notesPanel.style.right = `${window.innerWidth - rect.right - 10}px`;
+            notesPanel.style.top = `${rect.top}px`;
+        }
+    });
+
+
+    document.addEventListener("click", function (event) {
+
+        if (window.innerWidth > 1024) {
+            if (!notesPanel.contains(event.target) &&
+                !notesIcon.contains(event.target) &&
+                notesPanel.style.display === "flex") {
+                notesPanel.style.display = "none";
+            }
+        }
+    });
+
+
+    let touchStartY = 0;
+    let touchEndY = 0;
+
+    notesPanel.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
+    }, false);
+
+    notesPanel.addEventListener('touchmove', function(e) {
+        touchEndY = e.touches[0].clientY;
+
+        if (touchEndY > touchStartY) {
+            const diff = touchEndY - touchStartY;
+            if (diff > 50) {
+                notesPanel.classList.remove("mobile-open");
+            }
+        }
+    }, false);
+
+
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 1024) {
+
+            if (!document.getElementById("notesCloseBtn")) {
+                const closeBtn = document.createElement("button");
+                closeBtn.id = "notesCloseBtn";
+                closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                closeBtn.addEventListener("click", function() {
+                    notesPanel.classList.remove("mobile-open");
+                });
+                notesPanel.appendChild(closeBtn);
+            }
+        } else {
+
+            notesPanel.classList.remove("mobile-open");
+
+
+            const closeBtn = document.getElementById("notesCloseBtn");
+            if (closeBtn) {
+                closeBtn.remove();
+            }
+        }
+    });
+
     function getTextColor(bgColor) {
         const r = parseInt(bgColor.substring(1, 3), 16);
         const g = parseInt(bgColor.substring(3, 5), 16);
@@ -39,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return brightness < 128 ? "#ffffff" : "#000000";
     }
 
-    // Получает текст вокруг выделения для создания контекста
+
     function getTextContext(selectedText, range) {
         try {
             if (!range || !range.startContainer || !reader) return null;
@@ -51,11 +148,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const textIndex = readerContentNormalized.indexOf(selectedTextNormalized);
             if (textIndex === -1) return null;
 
-            // Получаем контекст до выделения (до 100 символов)
+
             const beforeLength = Math.min(100, textIndex);
             const beforeContext = readerContentNormalized.substring(textIndex - beforeLength, textIndex);
 
-            // Получаем контекст после выделения (до 100 символов)
+
             const afterStart = textIndex + selectedTextNormalized.length;
             const afterLength = Math.min(100, readerContentNormalized.length - afterStart);
             const afterContext = readerContentNormalized.substring(afterStart, afterStart + afterLength);
@@ -65,12 +162,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 after: afterContext
             };
         } catch (e) {
-            console.error("Ошибка при получении контекста: ", e);
+            console.error("Error getting context:", e);
             return null;
         }
     }
 
-    // UI функции
+
     function openAddNotePopup() {
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
@@ -78,36 +175,101 @@ document.addEventListener("DOMContentLoaded", function () {
         selectionRange = selection.getRangeAt(0);
         selectedText = selection.toString().trim();
 
-        // Проверка на минимальную длину выделения
+
         if (selectedText.length < MIN_NOTE_TEXT_LENGTH) {
-            alert(`Выделите больше текста для создания заметки (минимум ${MIN_NOTE_TEXT_LENGTH} символов)`);
+            alert(`Select more text to create a note (minimum ${MIN_NOTE_TEXT_LENGTH} characters)`);
             return;
         }
 
-        const rect = selectionRange.getBoundingClientRect();
 
-        let x = rect.right + window.scrollX;
-        let y = rect.bottom + window.scrollY;
+        const endPosition = selection.focusNode;
+        const endOffset = selection.focusOffset;
 
-        const windowWidth = window.innerWidth + window.scrollX;
-        const windowHeight = window.innerHeight + window.scrollY;
+
+        const tempRange = document.createRange();
+        tempRange.setStart(endPosition, endOffset);
+        tempRange.setEnd(endPosition, endOffset);
+
+
+        const cursorRect = tempRange.getBoundingClientRect();
+
+
+        const rect = cursorRect.width === 0 && cursorRect.height === 0 ?
+            selectionRange.getBoundingClientRect() : cursorRect;
+
         const popupWidth = addNotePopup.offsetWidth || 250;
         const popupHeight = addNotePopup.offsetHeight || 150;
 
-        if (x + popupWidth > windowWidth - 20) {
-            x = rect.left + window.scrollX - popupWidth;
+
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+
+        addNotePopup.classList.remove('arrow-left', 'arrow-right', 'arrow-top', 'arrow-bottom');
+
+
+        let x, y;
+        let arrowClass = '';
+
+
+        const spaceRight = windowWidth - rect.right;
+        const spaceLeft = rect.left;
+        const spaceBottom = windowHeight - rect.bottom;
+        const spaceTop = rect.top;
+
+
+        if (spaceRight >= popupWidth + 20 && spaceRight >= spaceLeft) {
+
+            x = rect.right + 15 + scrollLeft;
+            y = rect.top + scrollTop;
+            arrowClass = 'arrow-left';
+        } else if (spaceLeft >= popupWidth + 20) {
+
+            x = rect.left - popupWidth - 15 + scrollLeft;
+            y = rect.top + scrollTop;
+            arrowClass = 'arrow-right';
+        } else if (spaceBottom >= popupHeight + 20 && spaceBottom >= spaceTop) {
+
+            x = rect.left + scrollLeft;
+            y = rect.bottom + 15 + scrollTop;
+            arrowClass = 'arrow-top';
+        } else if (spaceTop >= popupHeight + 20) {
+
+            x = rect.left + scrollLeft;
+            y = rect.top - popupHeight - 15 + scrollTop;
+            arrowClass = 'arrow-bottom';
+        } else {
+
+            x = rect.left + scrollLeft;
+            y = rect.bottom + 10 + scrollTop;
         }
 
-        if (y + popupHeight > windowHeight - 20) {
-            y = rect.top + window.scrollY - popupHeight;
+
+        x = Math.max(20 + scrollLeft, Math.min(x, windowWidth - popupWidth - 20 + scrollLeft));
+        y = Math.max(scrollTop + 20, Math.min(y, scrollTop + windowHeight - popupHeight - 20));
+
+
+        if (arrowClass) {
+            addNotePopup.classList.add(arrowClass);
         }
 
-        x -= 10;
-        y -= 10;
 
         addNotePopup.style.left = `${x}px`;
         addNotePopup.style.top = `${y}px`;
         addNotePopup.style.display = "block";
+
+
+        addNotePopup.style.opacity = "0";
+        addNotePopup.style.transform = "scale(0.9)";
+
+
+        setTimeout(() => {
+            addNotePopup.style.opacity = "1";
+            addNotePopup.style.transform = "scale(1)";
+        }, 10);
+
 
         noteColorInput.value = "#ffffff";
         colorPreview.style.backgroundColor = "#ffffff";
@@ -165,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Удаление заметки с сервера
+
         deleteButton.addEventListener("click", function () {
             if (noteId) {
                 fetch(`/api/notes/${noteId}`, {
@@ -175,19 +337,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     .then(response => {
                         if (response.ok) {
                             noteItem.remove();
-                            // Удаляем из кэша, если заметка была там
+
                             notesCache = notesCache.filter(note => note.id !== noteId);
                         }
                     })
                     .catch(error => {
-                        console.error('Ошибка удаления заметки:', error);
+                        console.error('Error deleting note:', error);
                     });
             } else {
                 noteItem.remove();
             }
         });
 
-        // Навигация к странице заметки
+
         pageLink.addEventListener("click", function (event) {
             event.preventDefault();
             navigateToNote(page, text);
@@ -197,8 +359,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return noteItem;
     }
 
-    // Функция навигации к заметке
+
     function navigateToNote(page, noteText) {
+        if (window.innerWidth <= 1024) {
+            notesPanel.style.display = "none";
+            notesPanel.classList.remove("mobile-open");
+        }
         const currentUrl = new URL(window.location.href);
         const isTwoPageMode = currentUrl.searchParams.get("twoPageMode") === "true";
         const currentWordsPerScreen = currentUrl.searchParams.get("wordsPerScreen");
@@ -211,13 +377,13 @@ document.addEventListener("DOMContentLoaded", function () {
             newUrl.searchParams.set("wordsPerScreen", currentWordsPerScreen);
         }
 
-        // Сохраняем текст заметки для последующей подсветки
+
         localStorage.setItem("highlightFragment", noteText);
 
         if (typeof loadPage === "function") {
             loadPage(newUrl.toString()).then(() => {
                 if (typeof highlightNote === "function") {
-                    // Принудительная перерисовка
+
                     requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
                             highlightNote(page);
@@ -225,14 +391,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 }
             }).catch(error => {
-                console.error("❌ Error navigating to note:", error);
+                console.error("Error navigating to note:", error);
             });
         } else {
             window.location.href = newUrl.toString();
         }
     }
 
-    // Загрузка заметок с сервера
+
     function loadNotes() {
         const currentUrl = new URL(window.location.href);
         const isTwoPageMode = currentUrl.searchParams.get("twoPageMode") === "true";
@@ -247,28 +413,36 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(notes => {
                 notesList.innerHTML = '';
-                notesCache = notes; // Сохраняем заметки в кэш для быстрого доступа
+                notesCache = notes;
 
                 notes.forEach(note => {
                     createNote(note.title, note.text, note.color, note.page, note.id);
                 });
             })
             .catch(error => {
-                console.error('Ошибка загрузки заметок:', error);
+                console.error('Error loading notes:', error);
             });
     }
 
-    // Обработчики событий
 
-    // Переключение видимости панели заметок
+
+
     notesIcon.addEventListener("click", function () {
-        notesPanel.style.display = notesPanel.style.display === "block" ? "none" : "block";
-        const rect = notesIcon.getBoundingClientRect();
-        notesPanel.style.left = `${rect.right + 10}px`;
-        notesPanel.style.top = `${rect.top}px`;
+        if (window.innerWidth > 1024) {
+
+            notesPanel.style.display = notesPanel.style.display === "block" ? "none" : "block";
+            const rect = notesIcon.getBoundingClientRect();
+            notesPanel.style.left = `${rect.right + 10}px`;
+            notesPanel.style.top = `${rect.top}px`;
+        } else {
+
+
+            notesPanel.style.display = "flex";
+            notesPanel.classList.add("mobile-open");
+        }
     });
 
-    // Добавление кнопки при выделении текста
+
     reader.addEventListener("mouseup", function (event) {
         const selection = window.getSelection();
         if (selection.toString().trim()) {
@@ -278,7 +452,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Сохранение заметки
+
     saveNote.addEventListener("click", function () {
         const title = noteTitleInput.value.trim();
         const color = noteColorInput.value;
@@ -287,9 +461,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const wordsPerScreen = parseInt(new URL(window.location.href).searchParams.get("wordsPerScreen") || "1500");
         const isTwoPageMode = new URL(window.location.href).searchParams.get("twoPageMode") === "true";
 
-        // Проверка минимальной длины выделения
+
         if (title && selectedText && selectedText.length >= MIN_NOTE_TEXT_LENGTH) {
-            // Получаем контекст выделения
+
             const context = getTextContext(selectedText, selectionRange);
             const contextData = context ?
                 `&contextBefore=${encodeURIComponent(context.before)}&contextAfter=${encodeURIComponent(context.after)}` : '';
@@ -306,61 +480,61 @@ document.addEventListener("DOMContentLoaded", function () {
             })
                 .then(response => {
                     if (!response.ok) {
-                        // Выводим подробности об ошибке
+
                         return response.text().then(text => {
                             try {
                                 const error = JSON.parse(text);
-                                alert(error.error || 'Ошибка сохранения заметки');
+                                alert(error.error || 'Error saving note');
                             } catch (e) {
-                                console.error('Ошибка ответа:', text);
-                                alert('Ошибка сохранения заметки');
+                                console.error('Response error:', text);
+                                alert('Error saving note');
                             }
-                            throw new Error('Ошибка сохранения заметки');
+                            throw new Error('Error saving note');
                         });
                     }
                     return response.json();
                 })
                 .then(note => {
-                    console.log('Заметка сохранена:', note);
+                    console.log('Note saved:', note);
                     createNote(note.title, note.text, note.color, note.page, note.id);
-                    notesCache.push(note); // Добавляем в кэш
+                    notesCache.push(note);
 
                     noteTitleInput.value = "";
                     selectedText = "";
                     closeAddNotePopup();
 
-                    // Подсветим заметку в тексте
+
 
                 })
                 .catch(error => {
-                    console.error('Ошибка сохранения заметки:', error);
+                    console.error('Error saving note:', error);
                 });
         } else {
-            alert(`Введите название заметки и выделите текст (минимум ${MIN_NOTE_TEXT_LENGTH} символов).`);
+            alert(`Enter the note title and select the text (minimum ${MIN_NOTE_TEXT_LENGTH} characters).`);
         }
     });
 
-    // Закрытие popup при клике вне его области
+
     document.addEventListener("click", function (event) {
         if (!addNotePopup.contains(event.target) && !window.getSelection().toString()) {
             closeAddNotePopup();
         }
 
-        // Закрытие панели заметок при клике вне нее
+
         if (!notesPanel.contains(event.target) && !notesIcon.contains(event.target)) {
             notesPanel.style.display = "none";
         }
     });
 
-    // Закрытие popup при скролле
+
     document.addEventListener("scroll", closeAddNotePopup);
 
-    // Отмена добавления заметки
+
     cancelNote.addEventListener("click", closeAddNotePopup);
 
-    // Очистка всех заметок
+
     clearNotes.addEventListener("click", function () {
-        if (!confirm("Вы уверены, что хотите удалить все заметки для этой книги?")) {
+        if (!confirm("Are you sure you want to delete all notes for this book?")) {
             return;
         }
 
@@ -370,22 +544,22 @@ document.addEventListener("DOMContentLoaded", function () {
         })
             .then(response => {
                 if (response.ok) {
-                    // Очищаем список заметок локально
+
                     notesList.innerHTML = '';
-                    notesCache = []; // Очищаем кэш
-                    alert("Все заметки успешно удалены");
+                    notesCache = [];
+                    alert("All notes have been successfully deleted.");
                 } else {
-                    console.error('Не удалось очистить заметки');
-                    alert("Произошла ошибка при удалении заметок");
+                    console.error('Failed to clear notes');
+                    alert("There was an error deleting notes");
                 }
             })
             .catch(error => {
-                console.error('Ошибка при очистке заметок:', error);
-                alert("Произошла ошибка при удалении заметок");
+                console.error('Error clearing notes:', error);
+                alert("There was an error deleting notes");
             });
     });
 
-    // Обработчики для цветовой палитры заметок
+
     colorPreview.addEventListener("click", function () {
         colorInput.click();
     });
@@ -394,17 +568,17 @@ document.addEventListener("DOMContentLoaded", function () {
         colorPreview.style.backgroundColor = colorInput.value;
     });
 
-    // Устанавливаем начальный цвет
+
     colorPreview.style.backgroundColor = colorInput.value;
 
-    // Предупреждение при фокусе на поле ввода без выделенного текста
+
     noteTitleInput.addEventListener("focus", function () {
         if (!selectedText || selectedText.length < MIN_NOTE_TEXT_LENGTH) {
-            alert(`Сначала выделите текст (минимум ${MIN_NOTE_TEXT_LENGTH} символов) перед вводом названия!`);
+            alert(`First select the text (minimum ${MIN_NOTE_TEXT_LENGTH} characters) before entering the name!`);
         }
     });
 
-    // Обработчик прокрутки панели заметок
+
     notesPanel.addEventListener("wheel", function (event) {
         if (notesPanel.scrollHeight > notesPanel.clientHeight) {
             event.preventDefault();
@@ -414,47 +588,47 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    // Улучшенная функция подсветки заметки
+
     window.highlightNote = function (page) {
         const reader = document.getElementById("reader");
         if (!reader) {
-            console.error("Ошибка: элемент reader не найден!");
+            console.error("Error: Element reader not found!");
             return;
         }
 
-        // Получаем текст заметки из localStorage
+
         const savedText = localStorage.getItem("highlightFragment");
         if (!savedText) {
-            console.warn("Текст для подсветки не найден");
+            console.warn("Highlight text not found");
             return;
         }
 
-        // Проверяем, находимся ли мы в двухстраничном режиме и на обложке
+
         const currentUrl = new URL(window.location.href);
         const isTwoPageMode = currentUrl.searchParams.get("twoPageMode") === "true";
         const currentPage = parseInt(document.getElementById("pageInput").value);
 
-        // Если мы в двухстраничном режиме и на странице обложки, нужно перейти к нужной странице
+
         if (isTwoPageMode && currentPage === 0) {
-            // Создаем новый URL с сохранением всех параметров, но с нужной страницей
+
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.set("page", page.toString());
 
-            // Используем loadPage для перехода на нужную страницу
+
             if (typeof loadPage === "function") {
                 loadPage(newUrl.toString()).then(() => {
-                    // После загрузки новой страницы повторяем подсветку
+
                     setTimeout(() => highlightNote(page), 300);
                 });
                 return;
             } else {
-                // Резервный вариант - обычный переход
+
                 window.location.href = newUrl.toString();
                 return;
             }
         }
 
-        // Удаляем предыдущие подсветки
+
         reader.querySelectorAll(".highlight").forEach(el => {
             const parent = el.parentNode;
             while (el.firstChild) {
@@ -463,14 +637,14 @@ document.addEventListener("DOMContentLoaded", function () {
             parent.removeChild(el);
         });
 
-        // Разбиваем текст заметки на параграфы для более точного поиска
+
         const paragraphs = savedText.split(/\n+/).map(p => p.trim()).filter(p => p.length > 0);
 
-        // Получаем весь текст страницы
+
         const fullText = reader.textContent;
         const lowerFullText = fullText.toLowerCase();
 
-        // Ищем каждый параграф заметки в тексте
+
         let occurrences = [];
         paragraphs.forEach(para => {
             const lowerPara = para.toLowerCase();
@@ -483,25 +657,25 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Если ничего не нашли, попробуем поискать в кэше заметок
-        if (occurrences.length === 0) {
-            console.warn("Текст заметки не найден на этой странице, ищем в кэше...");
 
-            // Ищем заметку с похожим текстом в кэше
+        if (occurrences.length === 0) {
+            console.warn("The text of the note was not found on this page, searching in cache...");
+
+
             const noteMatch = notesCache.find(note => {
                 return note.text.includes(savedText) || savedText.includes(note.text);
             });
 
             if (noteMatch && noteMatch.page !== currentPage) {
-                console.log("Найдено совпадение в кэше, перенаправляем на страницу", noteMatch.page);
+                console.log("Match found in cache, redirecting to page", noteMatch.page);
                 navigateToNote(noteMatch.page, noteMatch.text);
                 return;
             }
 
-            // Новый код: проверяем соседние страницы
-            console.log("Проверяем соседние страницы...");
 
-            // Функция для проверки страницы
+            console.log("Checking the adjacent pages...");
+
+
             const checkNearbyPage = async (nearbyPage) => {
                 if (nearbyPage < (isTwoPageMode ? 0 : 1) ||
                     nearbyPage > parseInt(document.getElementById("pageInput").max)) {
@@ -518,12 +692,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     const doc = parser.parseFromString(html, "text/html");
                     const pageContent = doc.getElementById("reader").textContent;
 
-                    // Ищем текст заметки на соседней странице
+
                     const cleanContent = pageContent.toLowerCase();
                     const cleanNoteText = noteText.toLowerCase();
 
                     if (cleanContent.includes(cleanNoteText)) {
-                        if (confirm(`Текст заметки найден на странице ${nearbyPage}. Перейти?`)) {
+                        if (confirm(`The text of the note was found on the page ${nearbyPage}. Go?`)) {
                             loadPage(nearbyUrl.toString()).then(() => {
                                 setTimeout(() => highlightNote(nearbyPage, noteText), 300);
                             });
@@ -532,20 +706,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     return false;
                 } catch (error) {
-                    console.error("Ошибка при проверке соседней страницы:", error);
+                    console.error("Error checking adjacent page:", error);
                     return false;
                 }
             };
 
-            // Проверяем сначала следующую, потом предыдущую страницу
+
             checkNearbyPage(currentPage + 1).then(found => {
                 if (!found) {
                     checkNearbyPage(currentPage - 1);
                 }
             });
 
-            // Если в кэше не нашли и страница отличается от ожидаемой,
-            // попробуем перейти к странице заметки
+
+
             if (page !== currentPage) {
                 const bookId = window.location.pathname.split("/")[2];
                 const newUrl = new URL(`/book/${bookId}`, window.location.origin);
@@ -554,10 +728,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 newUrl.searchParams.set("wordsPerScreen",
                     currentUrl.searchParams.get("wordsPerScreen") || "1500");
 
-                // Используем loadPage для перехода на нужную страницу
+
                 if (typeof loadPage === "function") {
                     loadPage(newUrl.toString()).then(() => {
-                        // После загрузки новой страницы повторяем подсветку
+
                         setTimeout(() => highlightNote(page), 300);
                     });
                 } else {
@@ -567,10 +741,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Сортируем найденные вхождения по позиции
+
         occurrences.sort((a, b) => a.start - b.start);
 
-        // Применяем подсветку к каждому найденному фрагменту
+
         for (let i = occurrences.length - 1; i >= 0; i--) {
             const {start, end} = occurrences[i];
             let currentPos = 0;
@@ -604,7 +778,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // Прокручиваем к первой подсветке
+
         const firstHighlight = reader.querySelector(".highlight");
         if (firstHighlight) {
             setTimeout(() => {
@@ -613,6 +787,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // Загрузка заметок при открытии книги
+
     loadNotes();
 });

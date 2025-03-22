@@ -12,7 +12,7 @@ public class Ebook {
     @Column(name = "last_page", nullable = false)
     private int lastPage = 1;
     @Column(name = "book_theme")
-    private String bookTheme; // Убираем значение по умолчанию, разрешаем null
+    private String bookTheme;
 
     public String getBookTheme() {
         return bookTheme;
@@ -41,10 +41,10 @@ public class Ebook {
     @Column(name = "book_font_size")
     private Integer bookFontSize;
     @Column(name = "book_line_height")
-    private Double bookLineHeight; // Добавляем поле для межстрочного интервала
+    private Double bookLineHeight;
 
     @Column(name = "two_page_mode", nullable = false)
-    private boolean twoPageMode = false; // Значение по умолчанию - false
+    private boolean twoPageMode = false;
 
 
     @Column(nullable = true)
@@ -77,7 +77,7 @@ public class Ebook {
     @OneToMany(mappedBy = "ebook", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Note> notes = new ArrayList<>();
 
-    // Геттер и сеттер для notes
+
     public List<Note> getNotes() {
         return notes;
     }

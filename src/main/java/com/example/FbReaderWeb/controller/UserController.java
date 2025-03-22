@@ -46,7 +46,7 @@ public class UserController {
     @GetMapping("/profile/{username}")
     public String getUserProfile(@PathVariable String username, Model model) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
         model.addAttribute("user", user);
         return "profile";
     }

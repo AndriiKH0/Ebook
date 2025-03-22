@@ -21,12 +21,14 @@
     <form th:action="@{/edit/{id}(id=${ebook.id})}" method="post" onsubmit="return validateForm()">
         <label for="title">Book title:</label>
         <input type="text" id="title" name="title" th:value="${ebook.title}"
-               required maxlength="30" pattern="^[a-zA-Zа-яА-Я0-9ёЁ ,.!?-]+$"
+               required maxlength="30"
+               pattern="^[-a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻа-яА-Я0-9ёЁ ,.!?]+$"
                title="Only letters, numbers, spaces, and punctuation are allowed.">
 
         <label for="author">Author:</label>
         <input type="text" id="author" name="author" th:value="${ebook.author}"
-               required maxlength="30" pattern="^[a-zA-Zа-яА-ЯёЁ ]+$"
+               required maxlength="30"
+               pattern="^[-a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻа-яА-Я0-9ёЁ ,.!?]+$"
                title="Only letters and spaces are allowed.">
 
         <label for="genres">Genres (separated by commas):</label>

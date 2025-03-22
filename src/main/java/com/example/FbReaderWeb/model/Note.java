@@ -35,7 +35,7 @@ public class Note {
     @Column(nullable = true)
     private Integer wordsPerScreen;
 
-    // Новые поля для улучшенной навигации
+
     @Column(length = 100, nullable = true)
     private String textSignature;
 
@@ -48,11 +48,11 @@ public class Note {
     @Column(nullable = true)
     private Integer absolutePosition;
 
-    // Позиция в книге (от 0.0 до 1.0) - полезно для точного позиционирования
+
     @Column(nullable = true)
     private Double position;
 
-    // Геттеры и сеттеры для новых полей
+
     public String getTextSignature() {
         return textSignature;
     }
@@ -85,7 +85,7 @@ public class Note {
         this.absolutePosition = absolutePosition;
     }
 
-    // Существующие геттеры и сеттеры
+
     public Boolean getTwoPageMode() {
         return twoPageMode;
     }
@@ -118,7 +118,7 @@ public class Note {
         this.totalPages = totalPages;
     }
 
-    // Геттеры
+
     public Long getId() {
         return id;
     }
@@ -143,7 +143,7 @@ public class Note {
         return page;
     }
 
-    // Сеттеры
+
     public void setId(Long id) {
         this.id = id;
     }

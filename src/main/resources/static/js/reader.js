@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // ===== Инициализация =====
+
     const searchInput = document.getElementById("searchInput");
     const searchIcon = document.getElementById("searchIcon");
     const clearSearch = document.getElementById("clearSearch");
@@ -10,24 +10,24 @@ document.addEventListener("DOMContentLoaded", function () {
         loadChapters();
     }, 500);
 
-    // ===== Функция загрузки страницы (основная) =====
+
     window.loadPage = async function(url, chapterId = null) {
         if (isPageLoading) {
-            console.log("⚠️ Page loading already in progress, ignoring new request");
+            console.log("Page loading already in progress, ignoring new request");
             return Promise.reject("Page is already loading");
         }
 
         console.log(`🔄 Loading page: ${url}`);
         isPageLoading = true;
 
-        // Добавляем индикатор загрузки
+
         const loader = document.createElement('div');
         loader.className = 'page-loader';
         loader.innerHTML = '<div class="spinner"></div>';
         document.body.appendChild(loader);
 
         try {
-            // Загружаем страницу через AJAX
+
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const newReader = doc.getElementById("reader");
             const currentReader = document.getElementById("reader");
 
-            // Обновляем содержимое
+
             if (currentReader && newReader) {
                 const fragment = document.createDocumentFragment();
                 Array.from(newReader.childNodes).forEach(node => {
@@ -51,10 +51,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 currentReader.appendChild(fragment);
             }
 
-            // Обновляем URL без перезагрузки
+
             window.history.pushState({}, '', url);
 
-            // Запускаем обновление UI после перерисовки
+
             await new Promise(resolve => {
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
@@ -66,14 +66,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             });
 
-            // Загружаем главы, если еще не загружены
+
             if (!chapterCache.isLoaded && !chapterCache.isLoading) {
                 await loadChapters().catch(error => {
                     console.error("Error during initial chapter loading:", error);
                 });
             }
 
-            // Прокручиваем к главе, если указана
+
             if (chapterId) {
                 await new Promise(resolve => {
                     setTimeout(() => {
@@ -86,18 +86,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
 
-            // Применяем сохраненные стили
+
             if (typeof applyBookFontSize === 'function') applyBookFontSize();
             if (typeof forceApplyLineHeight === 'function') forceApplyLineHeight();
 
-            // Сообщаем о полной загрузке
+
             const pageLoadedEvent = new Event('pageFullyLoaded');
             document.dispatchEvent(pageLoadedEvent);
 
             return Promise.resolve();
 
         } catch (error) {
-            console.error("❌ Error loading page:", error);
+            console.error(" Error loading page:", error);
             throw error;
         } finally {
             isPageLoading = false;
@@ -107,7 +107,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // ===== Переключатель режима двух страниц =====
     const toggleTwoPageMode = document.getElementById("toggleTwoPageMode");
     if (toggleTwoPageMode) {
         toggleTwoPageMode.addEventListener("click", function() {
@@ -127,10 +126,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 newUrl.searchParams.set("twoPageMode", newTwoPageMode.toString());
                 newUrl.searchParams.set("page", newTwoPageMode ? "0" : "1");
-                const newWordsPerScreen = newTwoPageMode ? 750 : 1500;
+                const newWordsPerScreen = newTwoPageMode ? 250 : 1500;
                 newUrl.searchParams.set("wordsPerScreen", newWordsPerScreen.toString());
 
-                // Сохраняем настройку двухстраничного режима
+
                 fetch('/setBookTwoPageMode', {
                     method: 'POST',
                     headers: {
@@ -140,25 +139,25 @@ document.addEventListener("DOMContentLoaded", function () {
                     credentials: 'same-origin'
                 }).then(response => {
                     if (response.ok) {
-                        // Перенаправляем только после успешного сохранения
+
                         window.location.href = newUrl.toString();
                     } else {
-                        throw new Error('Не удалось сохранить режим');
+                        throw new Error('Failed to save mode');
                     }
                 }).catch(error => {
                     console.error('Ошибка:', error);
                     document.body.removeChild(loader);
-                    alert('Произошла ошибка.');
+                    alert('An error occurred');
                 });
             } catch (error) {
                 console.error('Error during mode switch:', error);
                 document.body.removeChild(loader);
-                alert('Произошла ошибка.');
+                alert('An error occurred.');
             }
         });
     }
 
-    // ===== Вспомогательные функции =====
+
     function getWordsPerScreen() {
         const reader = document.getElementById("reader");
         if (!reader) return 1500;
@@ -167,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const currentUrl = new URL(window.location.href);
         const isTwoPageMode = currentUrl.searchParams.get("twoPageMode") === "true";
 
-        return isTwoPageMode ? 750 : 1500;
+        return isTwoPageMode ? 250 : 1500;
     }
     window.getWordsPerScreen = getWordsPerScreen;
 
@@ -235,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ===== Кэш глав =====
+
     class ChapterCache {
         constructor() {
             this.chapters = new Map();
@@ -280,25 +279,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const chapterCache = new ChapterCache();
 
-    // ===== Загрузка глав =====
+
     async function loadChapters() {
         try {
             const currentUrl = new URL(window.location.href);
             const currentWordsPerScreen = currentUrl.searchParams.get("wordsPerScreen") || getWordsPerScreen();
 
-            // Если главы уже загружены с текущим wordsPerScreen, используем кэш
+
             if (chapterCache.isLoaded && chapterCache.wordsPerScreen === currentWordsPerScreen) {
-                console.log("✅ Using cached chapters for wordsPerScreen:", currentWordsPerScreen);
+                console.log(" Using cached chapters for wordsPerScreen:", currentWordsPerScreen);
                 updateChapterList(currentWordsPerScreen);
                 return;
             }
 
             if (chapterCache.isLoading) {
-                console.log("⚠️ Loading in progress...");
+                console.log("Loading in progress...");
                 return;
             }
 
-            console.log("⏳ Loading chapters for wordsPerScreen:", currentWordsPerScreen);
+            console.log("Loading chapters for wordsPerScreen:", currentWordsPerScreen);
             chapterCache.isLoading = true;
             chapterCache.wordsPerScreen = currentWordsPerScreen;
 
@@ -317,7 +316,7 @@ document.addEventListener("DOMContentLoaded", function () {
             chapterCache.isLoaded = true;
 
         } catch (error) {
-            console.error("❌ Error loading chapters:", error);
+            console.error("Error loading chapters:", error);
             chapterCache.clear();
         } finally {
             chapterCache.isLoading = false;
@@ -362,7 +361,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         number: number
                     }, wordsPerScreen);
 
-                    console.log(`✅ Added chapter ${number}: "${chapterText}" on page ${chapterPage}`);
+                    console.log(`Added chapter ${number}: "${chapterText}" on page ${chapterPage}`);
                 }
             });
         } catch (error) {
@@ -431,16 +430,16 @@ document.addEventListener("DOMContentLoaded", function () {
             .replace(/^-|-$/g, '')}`;
     }
 
-    // ===== Функция перехода к главе =====
+
     async function goToChapter(chapterId) {
-        console.log(`🎯 Going to chapter: ${chapterId}`);
+        console.log(`Going to chapter: ${chapterId}`);
 
         const currentUrl = new URL(window.location.href);
         const wordsPerScreen = currentUrl.searchParams.get("wordsPerScreen") || getWordsPerScreen();
 
         const chapterData = chapterCache.get(chapterId, wordsPerScreen);
         if (!chapterData) {
-            console.error(`❌ Chapter not found: ${chapterId}`);
+            console.error(`Chapter not found: ${chapterId}`);
             return;
         }
         if (window.innerWidth <= 1024) {
@@ -483,19 +482,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     window.goToChapter = goToChapter;
 
-    // ===== Функция подсветки заметок =====
-    // Функция для подсветки текста заметки в книге
+
+
     function highlightNote(page, specificText, context) {
         const reader = document.getElementById("reader");
         if (!reader) {
-            console.error("Ошибка: элемент reader не найден!");
+            console.error("Error: Element reader not found!");
             return false;
         }
 
-        // Получаем текст заметки из параметра или из localStorage
+
         const noteText = specificText || localStorage.getItem("highlightFragment");
         if (!noteText) {
-            console.warn("Текст для подсветки не найден");
+            console.warn("Highlight text not found");
             return false;
         }
 
@@ -503,7 +502,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const isTwoPageMode = currentUrl.searchParams.get("twoPageMode") === "true";
         const currentPage = parseInt(document.getElementById("pageInput").value);
 
-        // Если на обложке в двухстраничном режиме, переходим на нужную страницу
+
         if (isTwoPageMode && currentPage === 0 && page > 0) {
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.set("page", page.toString());
@@ -519,7 +518,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // Удаляем предыдущие подсветки
+
         reader.querySelectorAll(".highlight").forEach(el => {
             const parent = el.parentNode;
             while (el.firstChild) {
@@ -528,28 +527,28 @@ document.addEventListener("DOMContentLoaded", function () {
             parent.removeChild(el);
         });
 
-        // Стратегия 1: Пытаемся найти точное совпадение
+
         let occurrences = findExactMatches(reader, noteText);
 
-        // Стратегия 2: Если точных совпадений нет, пробуем найти по частям
+
         if (occurrences.length === 0) {
             occurrences = findPartialMatches(reader, noteText);
         }
 
-        // Стратегия 3: Если и это не помогло, пробуем использовать контекст (если доступен)
+
         if (occurrences.length === 0 && context) {
             occurrences = findMatchesByContext(reader, noteText, context);
         }
 
-        // Если нашли совпадения, подсвечиваем их
+
         if (occurrences.length > 0) {
-            // Сортируем по позиции
+
             occurrences.sort((a, b) => a.start - b.start);
 
-            // Применяем подсветку
+
             applyHighlights(reader, occurrences);
 
-            // Прокручиваем к первой подсветке
+
             const firstHighlight = reader.querySelector(".highlight");
             if (firstHighlight) {
                 setTimeout(() => {
@@ -560,10 +559,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return true;
         }
 
-        // Если на текущей странице нет совпадений и мы не на нужной странице,
-        // переходим на страницу из параметра
+
+
         if (page !== currentPage) {
-            console.warn(`Текст не найден на текущей странице (${currentPage}), переходим на страницу ${page}`);
+            console.warn(`Text not found on current page (${currentPage}), go to the page ${page}`);
 
             const bookId = window.location.pathname.split("/")[2];
             const newUrl = new URL(`/book/${bookId}`, window.location.origin);
@@ -579,15 +578,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 window.location.href = newUrl.toString();
             }
         } else {
-            console.warn(`Текст не найден на странице ${page}`);
+            console.warn(`Text not found on page ${page}`);
         }
 
         return false;
     }
 
-    /**
-     * Ищет точные совпадения текста заметки в содержимом
-     */
+
     function findExactMatches(container, text) {
         const fullText = container.textContent;
         const lowerFullText = fullText.toLowerCase();
@@ -606,22 +603,20 @@ document.addEventListener("DOMContentLoaded", function () {
         return occurrences;
     }
 
-    /**
-     * Ищет частичные совпадения, разбивая текст заметки на параграфы или предложения
-     */
+
     function findPartialMatches(container, text) {
         const fullText = container.textContent;
         const lowerFullText = fullText.toLowerCase();
 
-        // Разбиваем на параграфы
+
         const paragraphs = text.split(/\n+/).map(p => p.trim()).filter(p => p.length > 15);
         if (paragraphs.length === 0) {
-            // Если нет параграфов, разбиваем на предложения
+
             const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 15);
             paragraphs.push(...sentences);
         }
 
-        // Ищем каждый параграф
+
         let occurrences = [];
         paragraphs.forEach(para => {
             const lowerPara = para.toLowerCase();
@@ -637,9 +632,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return occurrences;
     }
 
-    /**
-     * Ищет совпадения с использованием контекста до и после текста заметки
-     */
+
     function findMatchesByContext(container, text, context) {
         if (!context || !context.before || !context.after) return [];
 
@@ -648,21 +641,21 @@ document.addEventListener("DOMContentLoaded", function () {
         const lowerBefore = context.before.toLowerCase();
         const lowerAfter = context.after.toLowerCase();
 
-        // Ищем по контексту
+
         let occurrences = [];
         let pos = 0;
 
         while (true) {
-            // Находим начало контекста
+
             const beforeIndex = lowerFullText.indexOf(lowerBefore, pos);
             if (beforeIndex === -1) break;
 
-            // Ищем конец контекста после найденного начала
+
             const afterSearchStart = beforeIndex + lowerBefore.length;
             const afterIndex = lowerFullText.indexOf(lowerAfter, afterSearchStart);
 
             if (afterIndex !== -1 && afterIndex - afterSearchStart < text.length * 1.5) {
-                // Вероятная позиция текста между найденными фрагментами контекста
+
                 const start = beforeIndex + lowerBefore.length;
                 const end = afterIndex;
 
@@ -675,9 +668,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return occurrences;
     }
 
-    /**
-     * Применяет подсветку к найденным фрагментам
-     */
+
     function applyHighlights(container, occurrences) {
         for (let i = occurrences.length - 1; i >= 0; i--) {
             const { start, end } = occurrences[i];
@@ -713,10 +704,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-// Делаем функцию доступной глобально
+
     window.highlightNote = highlightNote;
 
-    // ===== Обработчики событий для различных элементов UI =====
+
     document.addEventListener("click", function (event) {
         if (!event.target.classList.contains("highlight")) {
             console.log("Очищаем подсветку");
@@ -774,7 +765,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // ===== Навигация =====
+
     let totalPagesGlobal = null;
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -785,19 +776,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function updateNavigation(doc) {
-        // Пытаемся получить элемент #pageInput из полученного документа
+
         const existingPageInput = doc.querySelector("#pageInput");
         let pageValue, pageMax;
         if (existingPageInput) {
             pageValue = existingPageInput.value;
             pageMax = existingPageInput.max;
-            // Обновляем глобальное значение, если оно еще не установлено
+
             if (!totalPagesGlobal) {
                 totalPagesGlobal = parseInt(pageMax);
             }
         } else {
             const currentUrl = new URL(window.location.href);
-            // Если элемент не найден, используем параметры URL или дефолтные значения
+
             pageValue = currentUrl.searchParams.get("page") || (currentUrl.searchParams.get("twoPageMode") === "true" ? "0" : "1");
             pageMax = totalPagesGlobal ? totalPagesGlobal.toString() : "100";
         }
@@ -805,7 +796,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const currentUrl = new URL(window.location.href);
         const isTwoPageMode = currentUrl.searchParams.get("twoPageMode") === "true";
 
-        // Если включён двухстраничный режим, уменьшаем максимальное число страниц на 1
+
         pageMax = parseInt(pageMax);
         if (isTwoPageMode && !isNaN(pageMax)) {
             pageMax = (pageMax - 1).toString();
@@ -813,15 +804,15 @@ document.addEventListener("DOMContentLoaded", function () {
             pageMax = pageMax.toString();
         }
 
-        // Если какие-то значения отсутствуют, устанавливаем их по умолчанию
+
         if (!pageValue) {
             pageValue = currentUrl.searchParams.get("page") || (isTwoPageMode ? "0" : "1");
         }
 
-        // Удаляем старую навигацию
+
         document.querySelectorAll('.navigation').forEach(nav => nav.remove());
 
-        // Создаём контейнер для новой навигации
+
         let navigationElement = document.createElement("div");
         navigationElement.className = "navigation";
         const readerContainer = document.querySelector(".reader-container");
@@ -835,12 +826,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         navigationElement.innerHTML = '';
 
-        // Определяем текущую страницу из URL
+
         const currentPage = currentUrl.searchParams.has("page")
             ? parseInt(currentUrl.searchParams.get("page"))
             : (isTwoPageMode ? 0 : 1);
 
-        // Кнопка "Назад"
+
         const prevPage = document.createElement("a");
         prevPage.id = "prevPage";
         prevPage.innerHTML = `<i class="fa-solid fa-chevron-left"></i>`;
@@ -858,14 +849,14 @@ document.addEventListener("DOMContentLoaded", function () {
             prevPage.addEventListener("click", function(event) {
                 event.preventDefault();
                 if (!isPageLoading) {
-                    // Сохраняем выбранную страницу
+
                     saveCurrentPage(prevPageNum);
                     loadPage(this.href);
                 }
             });
         }
 
-        // Поле ввода страницы и отображение максимума
+
         const pageInput = document.createElement("input");
         pageInput.type = "number";
         pageInput.id = "pageInput";
@@ -878,22 +869,22 @@ document.addEventListener("DOMContentLoaded", function () {
         pageDisplay.className = "page-display";
         pageDisplay.textContent = ` / ${pageMax}`;
 
-        // Привязываем обработчик изменения сразу при создании элемента
+
         pageInput.addEventListener("change", function() {
             const newPage = parseInt(this.value);
             const totalPages = parseInt(this.max);
             const minPage = isTwoPageMode ? 0 : 1;
             if (!isNaN(newPage) && newPage >= minPage && newPage <= totalPages) {
-                // Сохраняем страницу
+
                 saveCurrentPage(newPage);
-                // Делаем задержку, чтобы запрос успел выполниться
+
                 setTimeout(() => {
                     const newUrl = new URL(window.location.href);
                     newUrl.searchParams.set("page", newPage.toString());
                     loadPage(newUrl.toString());
                 }, 200);
             } else {
-                console.warn("⚠️ Некорректный номер страницы:", newPage);
+                console.warn("Incorrect page number:", newPage);
                 this.value = pageValue;
             }
         });
@@ -901,7 +892,7 @@ document.addEventListener("DOMContentLoaded", function () {
         navigationElement.appendChild(pageInput);
         navigationElement.appendChild(pageDisplay);
 
-        // Кнопка "Вперёд"
+
         const maxPageInt = parseInt(pageMax);
         if (currentPage < maxPageInt) {
             const nextPage = document.createElement("a");
@@ -919,7 +910,7 @@ document.addEventListener("DOMContentLoaded", function () {
             nextPage.addEventListener("click", function(event) {
                 event.preventDefault();
                 if (!isPageLoading) {
-                    // Сохраняем выбранную страницу
+
                     saveCurrentPage(nextPageNum);
                     loadPage(this.href);
                 }
@@ -939,21 +930,21 @@ document.addEventListener("DOMContentLoaded", function () {
             keepalive: true
         }).then(response => {
             if (!response.ok) {
-                console.error("Ошибка сохранения страницы");
+                console.error("Error saving page");
             }
         }).catch(error => {
-            console.error("Ошибка запроса:", error);
+            console.error("Request error:", error);
         });
     }
 
-    // Инициализация при загрузке
+
     document.addEventListener("DOMContentLoaded", function() {
         const currentUrl = new URL(window.location.href);
         const isTwoPageMode = currentUrl.searchParams.get("twoPageMode") === "true";
         updateNavigation(document);
     });
 
-    // Панель боковой навигации
+
     const toggleSidebarRight = document.getElementById("toggleSidebarRight");
     if (toggleSidebarRight) {
         toggleSidebarRight.addEventListener("click", function() {
@@ -964,11 +955,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Инициализируем навигацию
+
     updateNavigation(document);
 });
 
-// ===== Функции темы =====
+
 function setTheme(theme) {
     let body = document.body;
     body.className = "";
@@ -981,13 +972,13 @@ function setTheme(theme) {
         themeElement.classList.add('active');
     }
 
-    // Получаем ID книги из URL
+
     const bookId = window.location.pathname.split("/")[2];
 
-    // Сохраняем тему в localStorage с учетом книги и пользователя
+
     localStorage.setItem(`selectedTheme_${bookId}`, theme);
 
-    // Отправляем запрос на сервер для сохранения темы книги
+
     fetch('/setBookTheme', {
         method: 'POST',
         headers: {
@@ -997,14 +988,14 @@ function setTheme(theme) {
         credentials: 'same-origin'
     }).then(response => {
         if (!response.ok) {
-            console.error('Не удалось сохранить тему книги');
+            console.error('Failed to save book theme');
         }
     }).catch(error => {
-        console.error('Ошибка при сохранении темы книги:', error);
+        console.error('Error saving book theme:', error);
     });
 }
 
-// Применяем тему при загрузке страницы
+
 document.addEventListener("DOMContentLoaded", function() {
     const bookId = window.location.pathname.split("/")[2];
     const localStorageTheme = localStorage.getItem(`selectedTheme_${bookId}`);
@@ -1013,7 +1004,7 @@ document.addEventListener("DOMContentLoaded", function() {
     setTheme(themeToApply);
 });
 
-// ===== Функции шрифта =====
+
 document.addEventListener("DOMContentLoaded", function () {
     const fontSelectIcon = document.getElementById("fontSelectIcon");
     const fontDropdown = document.getElementById("fontDropdown");
@@ -1045,13 +1036,13 @@ document.addEventListener("DOMContentLoaded", function () {
         option.addEventListener("click", function () {
             const selectedFont = this.getAttribute("data-font");
 
-            // Применяем шрифт к читателю
+
             reader.style.fontFamily = selectedFont;
 
-            // Сохраняем шрифт в localStorage с учетом книги
+
             localStorage.setItem(`selectedFont_${bookId}`, selectedFont);
 
-            // Отправляем запрос на сервер для сохранения шрифта книги
+
             fetch('/setBookFont', {
                 method: 'POST',
                 headers: {
@@ -1061,10 +1052,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 credentials: 'same-origin'
             }).then(response => {
                 if (!response.ok) {
-                    console.error('Не удалось сохранить шрифт книги');
+                    console.error('Failed to save book font');
                 }
             }).catch(error => {
-                console.error('Ошибка при сохранении шрифта книги:', error);
+                console.error('Error saving book font:', error);
             });
 
             fontDropdown.style.display = "none";
@@ -1077,12 +1068,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Применяем шрифт при загрузке страницы
+
     function applyBookFont() {
-        // Приоритет:
-        // 1. Шрифт из localStorage для конкретной книги
-        // 2. Шрифт книги, полученный с сервера
-        // 3. Дефолтный шрифт "Georgia"
+
+
+
+
 
         const localStorageFont = localStorage.getItem(`selectedFont_${bookId}`);
         const serverFont = document.body.getAttribute('data-book-font');
@@ -1091,7 +1082,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         reader.style.fontFamily = fontToApply;
 
-        // Обновляем активный шрифт в выпадающем списке
+
         fontOptions.forEach(option => {
             const font = option.getAttribute('data-font');
             if (font === fontToApply) {
@@ -1105,7 +1096,7 @@ document.addEventListener("DOMContentLoaded", function () {
     applyBookFont();
 });
 
-// ===== Функции размера шрифта =====
+
 function changeFontSize(delta) {
     const bookId = window.location.pathname.split("/")[2];
     const reader = document.getElementById("reader");
@@ -1116,14 +1107,14 @@ function changeFontSize(delta) {
     let currentSize = parseInt(fontSizeDisplay.textContent);
     let newSize = Math.max(12, Math.min(32, currentSize + delta));
 
-    // Применяем размер шрифта
+
     reader.style.fontSize = newSize + "px";
     fontSizeDisplay.textContent = newSize;
 
-    // Сохраняем размер шрифта в localStorage
+
     localStorage.setItem(`selectedFontSize_${bookId}`, newSize);
 
-    // Отправляем запрос на сервер для сохранения размера шрифта книги
+
     fetch('/setBookFontSize', {
         method: 'POST',
         headers: {
@@ -1133,10 +1124,10 @@ function changeFontSize(delta) {
         credentials: 'same-origin'
     }).then(response => {
         if (!response.ok) {
-            console.error('Не удалось сохранить размер шрифта книги');
+            console.error('Failed to save book font size');
         }
     }).catch(error => {
-        console.error('Ошибка при сохранении размера шрифта книги:', error);
+        console.error('Error saving book font size:', error);
     });
 }
 
@@ -1147,36 +1138,36 @@ function applyBookFontSize() {
 
     if (!reader) return;
 
-    // Приоритет:
-    // 1. Размер шрифта из localStorage для конкретной книги
-    // 2. Размер шрифта книги, полученный с сервера
-    // 3. Дефолтный размер 16
+
+
+
+
 
     const localStorageFontSize = localStorage.getItem(`selectedFontSize_${bookId}`);
     const serverFontSize = document.body.getAttribute('data-book-font-size');
 
-    const fontSizeToApply = localStorageFontSize || serverFontSize || '16';
+    const fontSizeToApply = localStorageFontSize || serverFontSize || '18';
     const fontSizeNum = parseInt(fontSizeToApply);
 
-    // Применяем размер шрифта
+
     reader.style.fontSize = `${fontSizeNum}px`;
 
-    // Обновляем отображение размера шрифта
+
     if (fontSizeDisplay) {
         fontSizeDisplay.textContent = fontSizeNum;
     }
 }
 
-// Применяем размер шрифта при загрузке страницы
+
 document.addEventListener("DOMContentLoaded", function() {
     applyBookFontSize();
 });
 
-// Делаем функции глобально доступными
+
 window.applyBookFontSize = applyBookFontSize;
 window.changeFontSize = changeFontSize;
 
-// ===== Функции боковой панели =====
+
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
@@ -1214,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, false);
 });
 
-// ===== Функции межстрочного интервала =====
+
 document.addEventListener("DOMContentLoaded", function () {
     const lineHeightIcon = document.getElementById("lineHeightIcon");
     const lineHeightContainer = document.getElementById("lineHeightContainer");
@@ -1224,21 +1215,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!lineHeightIcon || !lineHeightContainer) return;
 
-    // Функция для применения межстрочного интервала
+
     function applyLineHeight(value) {
-        // Применяем к параграфам во всех контейнерах
+
         document.querySelectorAll(".container p, .reader-container p").forEach(p => {
             p.style.lineHeight = value;
         });
 
-        // Обновляем слайдер и значение
+
         if (lineHeightSlider) lineHeightSlider.value = value;
         if (lineHeightValue) lineHeightValue.textContent = value;
 
-        // Сохраняем в localStorage с учетом книги
+
         localStorage.setItem(`selectedLineHeight_${bookId}`, value);
 
-        // Отправляем запрос на сервер для сохранения межстрочного интервала
+
         fetch('/setBookLineHeight', {
             method: 'POST',
             headers: {
@@ -1248,13 +1239,13 @@ document.addEventListener("DOMContentLoaded", function () {
             credentials: 'same-origin'
         }).then(response => {
             if (!response.ok) {
-                console.error('Не удалось сохранить межстрочный интервал');
+                console.error('Failed to save line spacing');
             }
         }).catch(error => {
-            console.error('Ошибка при сохранении межстрочного интервала:', error);
+            console.error('Error while saving line spacing:', error);
         });
 
-        // Принудительное обновление высоты контейнера для двухстраничного режима
+
         const readerContainer = document.querySelector(".reader-container");
         if (readerContainer && readerContainer.classList.contains("two-page-mode")) {
             requestAnimationFrame(() => {
@@ -1270,7 +1261,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Глобальная функция для немедленного применения межстрочного интервала
+
     function forceApplyLineHeight() {
         const bookId = window.location.pathname.split("/")[2];
         const localStorageLineHeight = localStorage.getItem(`selectedLineHeight_${bookId}`);
@@ -1281,10 +1272,10 @@ document.addEventListener("DOMContentLoaded", function () {
         applyLineHeight(lineHeightToApply);
     }
 
-    // Первичное применение межстрочного интервала
+
     forceApplyLineHeight();
 
-    // Обработчик колеса мыши для изменения межстрочного интервала
+
     lineHeightContainer.addEventListener('wheel', function(event) {
         event.preventDefault();
 
@@ -1297,20 +1288,20 @@ document.addEventListener("DOMContentLoaded", function () {
         applyLineHeight(roundedValue.toString());
     }, { passive: false });
 
-    // Обработчик слайдера
+
     if (lineHeightSlider) {
         lineHeightSlider.addEventListener("input", function() {
             applyLineHeight(this.value);
         });
     }
 
-    // Показ/скрытие контейнера настройки межстрочного интервала
+
     lineHeightIcon.addEventListener("click", function(event) {
         event.stopPropagation();
         lineHeightContainer.classList.toggle("active");
     });
 
-    // Закрытие контейнера при клике вне его
+
     document.addEventListener("click", function(event) {
         if (!lineHeightContainer.contains(event.target) &&
             !lineHeightIcon.contains(event.target)) {
@@ -1318,10 +1309,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Обработчик изменения размера окна
+
     window.addEventListener('resize', forceApplyLineHeight);
 
-    // Экспортируем функции в глобальную область видимости
+
     window.forceApplyLineHeight = forceApplyLineHeight;
     window.applyLineHeight = applyLineHeight;
 });

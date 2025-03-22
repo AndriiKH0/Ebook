@@ -33,39 +33,7 @@
 </div>
 
 <script>
-    function startUpload(event) {
-        event.preventDefault();
 
-        let fileInput = document.getElementById("fileInput");
-        let file = fileInput.files[0];
-
-        if (!file) {
-            alert("Please select an .fb2 file!");
-            return;
-        }
-
-        if (!file.name.endsWith(".fb2")) {
-            alert("Only .fb2 files are allowed!");
-            return;
-        }
-
-        let form = event.target;
-        let loadingDiv = document.getElementById("loading");
-        let progressBar = document.querySelector(".progress");
-
-        loadingDiv.style.display = "block";
-
-        let width = 0;
-        let interval = setInterval(function () {
-            if (width >= 100) {
-                clearInterval(interval);
-                setTimeout(() => form.submit(), 500);
-            } else {
-                width += 5;
-                progressBar.style.width = width + "%";
-            }
-        }, 300);
-    }
 </script>
 <script>
     function toggleMenu() {

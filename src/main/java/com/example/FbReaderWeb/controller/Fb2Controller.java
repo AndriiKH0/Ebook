@@ -33,12 +33,10 @@ public class Fb2Controller {
         this.userRepository = userRepository;
     }
 
-
     @GetMapping("/")
     public String home() {
         return "upload";
     }
-
 
     @PostMapping("/upload")
     public String uploadFile(@RequestParam("file") MultipartFile file, Principal principal) {
@@ -47,7 +45,7 @@ public class Fb2Controller {
             return "redirect:/library";
         } catch (Exception e) {
             e.printStackTrace();
-            return "redirect:/?error=Ошибка при загрузке файла";
+            return "redirect:/?error=Error";
         }
     }
 
@@ -161,14 +159,13 @@ public class Fb2Controller {
                            @RequestParam(value = "wordsPerScreen", defaultValue = "1500") int wordsPerScreen,
                            Principal principal,
                            Model model) {
-        int correctWordsPerScreen = twoPageMode ? 750 : 1500;
+        int correctWordsPerScreen = twoPageMode ? 250 : 1500;
 
         var ebookOptional = ebookRepository.findByIdAndUserUsername(id, principal.getName());
         if (ebookOptional.isPresent()) {
             Ebook book = ebookOptional.get();
             int savedPage = book.getLastPage();
 
-            // Если параметр page не задан, используем сохранённое значение
             boolean finalTwoPageMode = twoPageMode || book.isTwoPageMode();
             if (page == null || wordsPerScreen != correctWordsPerScreen) {
                 return "redirect:/book/" + id
@@ -177,7 +174,6 @@ public class Fb2Controller {
                         + "&wordsPerScreen=" + correctWordsPerScreen;
             }
 
-            // Устанавливаем тему книги, по умолчанию "original"
             String bookTheme = book.getBookTheme() != null ? book.getBookTheme() : "original";
             model.addAttribute("bookTheme", bookTheme);
 
@@ -186,19 +182,18 @@ public class Fb2Controller {
 
             Integer bookFontSize = book.getBookFontSize();
             if (bookFontSize == null || bookFontSize < 12 || bookFontSize > 32) {
-                bookFontSize = 16; // Значение по умолчанию
+                bookFontSize = 18;
                 book.setBookFontSize(bookFontSize);
                 ebookRepository.save(book);
             }
             model.addAttribute("bookFontSize", bookFontSize);
             Double bookLineHeight = book.getBookLineHeight();
             if (bookLineHeight == null || bookLineHeight < 1.0 || bookLineHeight > 3.0) {
-                bookLineHeight = 1.5; // Значение по умолчанию
+                bookLineHeight = 1.9;
                 book.setBookLineHeight(bookLineHeight);
                 ebookRepository.save(book);
             }
             model.addAttribute("bookLineHeight", bookLineHeight);
-            // Остальной код без изменений...
             if (twoPageMode && page == 0) {
                 String coverContent = String.format(
                         "<div class='cover-page'>" +
@@ -243,14 +238,10 @@ public class Fb2Controller {
 
             return "book";
         } else {
-            model.addAttribute("error", "Книга не найдена.");
+            model.addAttribute("error", "Book not found.");
             return "library";
         }
     }
-
-
-
-
 
     @PostMapping("/savePage")
     @Transactional
@@ -266,20 +257,13 @@ public class Fb2Controller {
     }
 
 
-
-
-
-
-
-
-    // Удаление книги
     @PostMapping("/delete/{id}")
     public String deleteBook(@PathVariable Long id, Principal principal, Model model) {
         var ebookOptional = ebookRepository.findById(id);
         if (ebookOptional.isPresent()) {
             Ebook book = ebookOptional.get();
             if (!book.getUser().getUsername().equals(principal.getName())) {
-                model.addAttribute("error", "Вы не можете удалить эту книгу.");
+                model.addAttribute("error", "You cannot delete this book.");
                 return "library";
             }
             ebookRepository.delete(book);
@@ -287,27 +271,25 @@ public class Fb2Controller {
         return "redirect:/library";
     }
 
-    // Редактирование книги
+
     @GetMapping("/edit/{id}")
     public String editBook(@PathVariable Long id, Principal principal, Model model) {
         var ebookOptional = ebookRepository.findById(id);
         if (ebookOptional.isPresent()) {
             Ebook ebook = ebookOptional.get();
             if (!ebook.getUser().getUsername().equals(principal.getName())) {
-                model.addAttribute("error", "Вы не можете редактировать эту книгу.");
+                model.addAttribute("error", "You cannot edit this book..");
                 return "library";
             }
-            // Преобразуем genres в строку, разделённую запятыми
             String genresAsString = String.join(", ", ebook.getGenres());
             model.addAttribute("ebook", ebook);
-            model.addAttribute("genresAsString", genresAsString); // Передаём строку жанров
+            model.addAttribute("genresAsString", genresAsString);
             return "edit";
         } else {
             model.addAttribute("error", "Книга не найдена.");
             return "library";
         }
     }
-
     @PostMapping("/edit/{id}")
     public String saveEditedBook(@PathVariable Long id,
                                  @RequestParam("title") String title,
@@ -319,23 +301,20 @@ public class Fb2Controller {
         if (ebookOptional.isPresent()) {
             Ebook ebook = ebookOptional.get();
             if (!ebook.getUser().getUsername().equals(principal.getName())) {
-                model.addAttribute("error", "Вы не можете редактировать эту книгу.");
+                model.addAttribute("error", "You cannot edit this book.");
                 return "library";
             }
             ebook.setTitle(stripTags(title));
             ebook.setAuthor(stripTags(author));
-
-            // Обновление списка жанров
-            ebook.getGenres().clear(); // Очистить текущий список
-            List<String> genreList = Arrays.asList(genres.split("\\s*,\\s*")); // Преобразуем строку в список
-            ebook.getGenres().addAll(genreList); // Добавляем новые жанры
+            ebook.getGenres().clear();
+            List<String> genreList = Arrays.asList(genres.split("\\s*,\\s*"));
+            ebook.getGenres().addAll(genreList);
 
             ebookRepository.save(ebook);
         }
         return "redirect:/library";
     }
 
-    // Поиск книг
     @GetMapping("/search")
     public String searchBooks(@RequestParam(value = "query", required = false) String query,
                               @RequestParam(value = "filter", required = false) String filter,
@@ -349,20 +328,17 @@ public class Fb2Controller {
         } else if ("genre".equalsIgnoreCase(filter)) {
             results = ebookRepository.findByUserAndGenreContainingIgnoreCase(principal.getName(), query);
         } else {
-            results = new ArrayList<>(); // Пустой список, если фильтр не указан
+            results = new ArrayList<>();
         }
 
         model.addAttribute("results", results);
         model.addAttribute("query", query);
         model.addAttribute("filter", filter);
-        return "search"; // Шаблон для отображения результатов
+        return "search";
     }
 
     private String stripTags(String input) {
         return input.replaceAll("<[^>]+>", "").trim();
     }
-
-
-
 
 }

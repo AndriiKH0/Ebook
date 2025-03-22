@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${ebook.title}">Читалка книги</title>
+    <title th:text="${ebook.title}">Czytnik ebook</title>
     <link rel="stylesheet" th:href="@{/css/reader.css}">
     <script src="/js/reader.js"></script>
-    <script src="/js/scripts.js"></script>
     <script src="/js/notes.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
 </head>
 <body>
 
@@ -29,7 +27,6 @@
 
 
 <div class="sidebar" id="sidebar">
-
     <div>
         <div class="menu-header">
             <h2>Styles and Settings</h2>
@@ -37,12 +34,10 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-
-
         <h3>Font Size</h3>
         <div class="font-size-control">
             <button class="font-size-btn" onclick="changeFontSize(-1)">−</button>
-            <span class="font-size-display" id="fontSizeDisplay">16</span>
+            <span class="font-size-display" id="fontSizeDisplay">18</span>
             <button class="font-size-btn" onclick="changeFontSize(1)">+</button>
 
         </div>
@@ -70,8 +65,8 @@
 
 
             <div id="lineHeightContainer" class="line-height-container">
-                <input type="range" id="lineHeightSlider" min="1" max="3" step="0.1" value="1.5">
-                <span id="lineHeightValue">1.5</span>
+                <input type="range" id="lineHeightSlider" min="1" max="3" step="0.1" value="1.9">
+                <span id="lineHeightValue">1.9</span>
             </div>
         </div>
 
@@ -110,7 +105,7 @@
 </div>
 
 <div id="fontDropdown" class="font-dropdown">
-    <h3>Выберите шрифт</h3>
+    <h3>Select font</h3>
     <div class="font-option" data-font="Georgia" style="font-family: Georgia;">Georgia</div>
     <div class="font-option" data-font="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</div>
     <div class="font-option" data-font="Arial" style="font-family: Arial;">Arial</div>
@@ -156,26 +151,22 @@
 
 
 <div class="container">
-
     <div class="reader-container" id="reader" th:utext="${pageContent}"></div>
-
-
-    <div class="navigation-container">
-        <div class="navigation">
-            <a id="prevPage" th:if="${hasPrevious}" th:href="@{/book/{id}(id=${ebook.id}, page=${currentPage - 1})}">
+        <div class="navigation-container">
+            <div class="navigation">
+                 <a id="prevPage" th:if="${hasPrevious}" th:href="@{/book/{id}(id=${ebook.id}, page=${currentPage - 1})}">
                 <i class="fa-solid fa-chevron-left"></i>
-            </a>
+                </a>
 
-            <input type="number" id="pageInput" min="1" th:max="${totalPages}" th:value="${currentPage}">
+                <input type="number" id="pageInput" min="1" th:max="${totalPages}" th:value="${currentPage}">
 
-            <span th:text="' / ' + ${totalPages}"></span>
+                <span th:text="' / ' + ${totalPages}"></span>
 
-            <a id="nextPage" th:if="${hasNext}" th:href="@{/book/{id}(id=${ebook.id}, page=${currentPage + 1})}">
+                <a id="nextPage" th:if="${hasNext}" th:href="@{/book/{id}(id=${ebook.id}, page=${currentPage + 1})}">
                 <i class="fa-solid fa-chevron-right"></i>
-            </a>
+                </a>
+            </div>
         </div>
-    </div>
-
 </div>
 <script>
 
@@ -216,7 +207,7 @@
     });
     document.addEventListener('click', function(e) {
         if (window.innerWidth <= 1024) {
-            // Закрытие мобильного меню (бургер)
+
             const mobileMenuOptions = document.getElementById('mobileMenuOptions');
             const mobileMenuButton = document.getElementById('mobileMenuButton');
             if (mobileMenuOptions.classList.contains('show') &&
@@ -224,7 +215,7 @@
                 !mobileMenuButton.contains(e.target)) {
                 toggleMobileMenu();
             }
-            // Закрытие левой боковой панели
+
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             if (sidebar.classList.contains('open') &&
@@ -232,7 +223,7 @@
                 !sidebarToggle.contains(e.target)) {
                 sidebar.classList.remove('open');
             }
-            // Закрытие правой боковой панели
+
             const sidebarRight = document.getElementById('sidebarRight');
             const sidebarRightToggle = document.getElementById('toggleSidebarRight');
             if (sidebarRight.classList.contains('open') &&
@@ -281,7 +272,7 @@
         sidebarRight.classList.toggle('open');
     }
     document.addEventListener("click", function(event) {
-        // Проверяем, что клик был не внутри правой колонки
+
         const sidebarRight = document.getElementById("sidebarRight");
         const toggleSidebarRight = document.getElementById("toggleSidebarRight");
 
@@ -306,5 +297,39 @@
 
 
 
+
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
