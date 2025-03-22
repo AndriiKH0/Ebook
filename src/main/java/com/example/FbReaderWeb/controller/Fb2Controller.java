@@ -50,12 +50,7 @@ public class Fb2Controller {
     }
 
 
-    @GetMapping("/library")
-    public String viewLibrary(Principal principal, Model model) {
-        List<Ebook> ebooks = ebookRepository.findByUserUsername(principal.getName());
-        model.addAttribute("ebooks", ebooks);
-        return "library";
-    }
+
     private int getTotalPages(String content, int wordsPerScreen, boolean twoPageMode) {
         List<String> pages = twoPageMode
                 ? fb2Service.paginateTwoPageMode(content, wordsPerScreen)
@@ -336,6 +331,30 @@ public class Fb2Controller {
         model.addAttribute("filter", filter);
         return "search";
     }
+    @GetMapping("/library")
+    public String viewLibrary(
+            @RequestParam(name = "sortBy", required = false, defaultValue = "title") String sortBy,
+            Principal principal,
+            Model model
+    ) {
+        List<Ebook> ebooks;
+
+        switch (sortBy) {
+            case "date":
+                ebooks = ebookRepository.findByUserUsernameOrderByCreatedAtDesc(principal.getName());
+                break;
+            case "author":
+                ebooks = ebookRepository.findByUserUsernameOrderByAuthorAsc(principal.getName());
+                break;
+            default:
+                ebooks = ebookRepository.findByUserUsernameOrderByTitleAsc(principal.getName());
+        }
+
+        model.addAttribute("ebooks", ebooks);
+        model.addAttribute("currentSort", sortBy);
+        return "library";
+    }
+
 
     private String stripTags(String input) {
         return input.replaceAll("<[^>]+>", "").trim();

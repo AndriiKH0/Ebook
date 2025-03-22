@@ -12,12 +12,31 @@
     <h1>My library</h1>
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <nav id="nav-menu">
-        <a href="/">Download new book</a>
-        <a href="/search">Search for books</a>
-        <form th:action="@{/logout}" method="post" style="display: inline;">
-            <button type="submit" class="nav-btn">Logout</button>
-        </form>
+        <div class="nav-item">
+            <form method="get" action="/library">
+                <select name="sortBy" onchange="this.form.submit()" class="nav-btn">
+                    <option value="title" th:selected="${currentSort == 'title'}">Sortuj alfabetycznie</option>
+                    <option value="date" th:selected="${currentSort == 'date'}">Sortuj według daty</option>
+                    <option value="author" th:selected="${currentSort == 'author'}">Sortuj według autora</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="nav-item">
+            <a href="/" class="nav-btn">Download</a>
+        </div>
+
+        <div class="nav-item">
+            <a href="/search" class="nav-btn">Search</a>
+        </div>
+
+        <div class="nav-item">
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="nav-btn">Logout</button>
+            </form>
+        </div>
     </nav>
+
 </header>
 
 <div class="library-container">

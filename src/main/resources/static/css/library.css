@@ -64,6 +64,34 @@ nav a {
     background: rgba(255, 255, 255, 0.2);
     transition: background 0.3s;
 }
+select.nav-btn {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    text-align-last: center; /* выравнивание текста */
+}
+
+
+nav select.nav-btn:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.4);
+}
+
+
+nav select.nav-btn option {
+    color: black;
+    background-color: white;
+    font-weight: normal;
+}
 
 nav a:hover {
     background: rgba(255, 255, 255, 0.5);
@@ -447,6 +475,75 @@ input {
     color: red;
 }
 
+nav form.nav-form {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    padding: 0;
+}
+
+nav form.nav-form select.nav-btn {
+    width: 100%;
+    background: transparent;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+nav form.nav-form select.nav-btn option {
+    background-color: white;
+    color: black;
+}
+.nav-item {
+    width: 100%;
+}
+
+.nav-item form,
+.nav-item a,
+.nav-item button,
+.nav-item select {
+    display: block;
+
+    font-size: 18px;
+    color: white;
+
+    text-align: center;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    appearance: none;
+}
+
+.nav-item a {
+    text-decoration: none;
+}
+
+.nav-item form select {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.nav-item form select option {
+    color: black;
+    background: white;
+    font-weight: normal;
+}
+
+.nav-item form select:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.nav-item button:hover,
+.nav-item a:hover,
+.nav-item select:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
 
 @media (max-width: 768px) {
     .menu-toggle {
@@ -458,7 +555,21 @@ input {
         cursor: pointer;
         padding: 10px;
     }
+    nav form {
+        width: 100%;
+        padding: 0 10px;
+    }
 
+    nav select.nav-btn {
+        width: 100%;
+        font-size: 18px;
+        padding: 10px;
+        margin-top: 5px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 5px;
+        border: none;
+    }
     nav {
         display: none;
         flex-direction: column;
@@ -483,6 +594,16 @@ input {
 
     nav.show {
         display: flex;
+    }
+    nav form.nav-form {
+        width: 100%;
+        padding: 0 10px;
+    }
+
+    nav form.nav-form select.nav-btn {
+        font-size: 18px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.2);
     }
 }
 

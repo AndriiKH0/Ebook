@@ -17,7 +17,9 @@ public interface EbookRepository extends JpaRepository<Ebook, Long> {
 
 
     List<Ebook> findByAuthorContainingIgnoreCase(String author);
-
+    List<Ebook> findByUserUsernameOrderByTitleAsc(String username);
+    List<Ebook> findByUserUsernameOrderByCreatedAtDesc(String username);
+    List<Ebook> findByUserUsernameOrderByAuthorAsc(String username);
 
     @Query("SELECT e FROM Ebook e JOIN e.genres g WHERE LOWER(g) LIKE LOWER(CONCAT('%', :genre, '%')) AND e.user.username = :username")
     List<Ebook> findByUserAndGenreContainingIgnoreCase(@Param("username") String username, @Param("genre") String genre);

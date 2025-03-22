@@ -3,6 +3,7 @@ package com.example.FbReaderWeb.model;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Column;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -22,7 +23,9 @@ public class Ebook {
         this.bookTheme = bookTheme;
     }
 
-
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = true) // временно!
+    private Date createdAt;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,7 +64,10 @@ public class Ebook {
     @Column
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> genres = new ArrayList<>();
-
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = new Date();
+    }
     public Ebook() {}
 
     public Ebook(String title, String author, String content) {
