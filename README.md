@@ -14,18 +14,11 @@ Krok 1: Przygotowanie bazy danych MySQL
 
 1 - Uruchom MySQL na swoim komputerze.
 2 - Zaloguj się do MySQL z uprawnieniami administratora.
-3 - Utwórz bazę danych 'fbreader':
-
-CREATE DATABASE fbreader;
-
-4 - Utwórz użytkownika z hasłem (możesz wybrać dowolną nazwę użytkownika i hasło):
-
-CREATE USER 'twój_użytkownik'@'localhost' IDENTIFIED BY 'twoje_hasło';
-
-5 - Nadaj użytkownikowi uprawnienia do bazy danych 'fbreader':
-GRANT ALL PRIVILEGES ON fbreader.* TO 'twój_użytkownik'@'localhost';
-FLUSH PRIVILEGES;
-
+3 - W MySQL Workbench wybierz Data Import.
+4 - Załaduj plik SQL dump (fbreader_dump.sql) do przywrócenia struktury i danych.
+5 - Wybierz opcję Import from Self-Contained File, wskaż plik .sql.
+6 - Wybierz nazwę bazy fbreader (lub zmień według własnych potrzeb).
+7 - Kliknij Start Import.
 
 Krok 2: Konfiguracja aplikacji
 
