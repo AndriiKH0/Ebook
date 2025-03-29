@@ -192,7 +192,7 @@ public class Fb2Controller {
             if (twoPageMode && page == 0) {
                 String coverContent = String.format(
                         "<div class='cover-page'>" +
-                                "<img src='/images/%s' alt='Обложка' class='cover-image'>" +
+                                "<img src='/images/%s' alt='Cover' class='cover-image'>" +
                                 "<h1 class='book-title'>%s</h1>" +
                                 "<h2 class='book-author'>%s</h2>" +
                                 "</div>",
@@ -281,7 +281,7 @@ public class Fb2Controller {
             model.addAttribute("genresAsString", genresAsString);
             return "edit";
         } else {
-            model.addAttribute("error", "Книга не найдена.");
+            model.addAttribute("error", "Book not found.");
             return "library";
         }
     }

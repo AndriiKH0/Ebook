@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         throw new Error('Failed to save mode');
                     }
                 }).catch(error => {
-                    console.error('Ошибка:', error);
+                    console.error('Error:', error);
                     document.body.removeChild(loader);
                     alert('An error occurred');
                 });
@@ -710,7 +710,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.addEventListener("click", function (event) {
         if (!event.target.classList.contains("highlight")) {
-            console.log("Очищаем подсветку");
             highlightText("");
         }
     });

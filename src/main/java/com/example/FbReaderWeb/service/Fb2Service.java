@@ -122,7 +122,7 @@ public class Fb2Service {
         StringBuilder result = new StringBuilder();
 
         result.append("<div class='cover-page'>")
-                .append("<img src='/images/").append(bookId).append("_cover.jpg' alt='Обложка' class='cover-image'>")
+                .append("<img src='/images/").append(bookId).append("_cover.jpg' alt='Cover' class='cover-image'>")
                 .append("<h1 class='book-title'>").append(title).append("</h1>")
                 .append("<h2 class='book-author'>").append(author).append("</h2>")
                 .append("</div>");
@@ -233,7 +233,7 @@ public class Fb2Service {
 
     private String extractAuthor(String content) {
         String authorTag = extractTagContent(content, "<author>", "</author>");
-        if (authorTag == null) return "Неизвестный автор";
+        if (authorTag == null) return "Unknown author";
 
         String firstName = extractTagContent(authorTag, "<first-name>", "</first-name>");
         String lastName = extractTagContent(authorTag, "<last-name>", "</last-name>");
@@ -247,13 +247,13 @@ public class Fb2Service {
     private String extractTagContent(String content, String startTag, String endTag) {
         int start = content.indexOf(startTag);
         if (start == -1) {
-            System.err.println("Тег " + startTag + " не найден!");
+            System.err.println("Tag " + startTag + " nie znaleziono!");
             return "";
         }
 
         int end = content.indexOf(endTag, start + startTag.length());
         if (end == -1) {
-            System.err.println("Тег " + endTag + " не найден!");
+            System.err.println("Tag " + endTag + " nie znaleziono!");
             return "";
         }
 

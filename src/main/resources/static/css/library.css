@@ -77,7 +77,7 @@ select.nav-btn {
     border: none;
     cursor: pointer;
     text-align: center;
-    text-align-last: center; /* выравнивание текста */
+    text-align-last: center;
 }
 
 

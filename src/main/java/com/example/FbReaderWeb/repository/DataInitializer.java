@@ -18,7 +18,7 @@ public class DataInitializer {
                 admin.setPassword(passwordEncoder.encode("admin"));
                 admin.getRoles().add("ROLE_ADMIN");
                 userRepository.save(admin);
-                System.out.println("Пользователь admin создан с паролем 'admin'");
+                System.out.println("Użytkownik admin utworzony z hasłem 'admin'");
             }
         };
     }

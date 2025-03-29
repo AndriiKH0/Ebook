@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
+
 public class Note {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

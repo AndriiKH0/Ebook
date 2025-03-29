@@ -24,7 +24,7 @@ public class Ebook {
     }
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = true) // временно!
+    @Column(nullable = true)
     private Date createdAt;
 
     @Id
